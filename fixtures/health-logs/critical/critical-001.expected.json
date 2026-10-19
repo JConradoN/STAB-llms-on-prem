@@ -1,0 +1,13 @@
+{
+  "case_id": "critical-001",
+  "severity_expected": "critical",
+  "primary_issue": "disk_critical_on_var",
+  "secondary_issues": [
+    "postgresql_service_failed",
+    "database_unavailable"
+  ],
+  "host": "fox-node-03",
+  "timestamp": "2026-04-24T16:44:25Z",
+  "requires_action": true,
+  "expected_summary": "Falha crítica no host com disco /var quase cheio causando falha do PostgreSQL e indisponibilidade do banco de dados."
+}

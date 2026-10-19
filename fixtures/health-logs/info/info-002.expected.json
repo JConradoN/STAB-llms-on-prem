@@ -1,0 +1,10 @@
+{
+  "case_id": "info-002",
+  "severity_expected": "info",
+  "primary_issue": "none",
+  "secondary_issues": [],
+  "host": "fox-node-05",
+  "timestamp": "2026-04-24T09:15:06Z",
+  "requires_action": false,
+  "expected_summary": "CPU em nível elevado mas abaixo do limiar de alerta, memória e serviços saudáveis, sem ação necessária."
+}

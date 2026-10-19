@@ -1,0 +1,113 @@
+# S2 — Run 5
+# Modelo         : llama3.1:8b
+# Timestamp      : 2026-04-26 09:18:34
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S2-health-check-json.md seção 4
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh, capture a saída e extraia os dados
+de sistema para gerar um JSON válido com o seguinte schema exato:
+
+{
+  "timestamp": "<data e hora no formato ISO 8601: YYYY-MM-DDTHH:MM:SS>",
+  "cpu": {
+    "uso_pct": <número decimal>,
+    "temperatura_c": <inteiro>
+  },
+  "memoria": {
+    "total_mb": <inteiro>,
+    "usada_mb": <inteiro>,
+    "livre_mb": <inteiro>,
+    "disponivel_mb": <inteiro>
+  },
+  "gpu": {
+    "nome": "<string>",
+    "uso_pct": <inteiro>,
+    "temperatura_c": <inteiro>,
+    "vram_usada_mib": <inteiro>,
+    "vram_livre_mib": <inteiro>,
+    "vram_total_mib": <inteiro>
+  }
+}
+
+Responda APENAS com o JSON válido, sem texto adicional, sem markdown, sem bloco de código.
+Se não conseguir executar o script, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : bash ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+26/04/2026 09:18:34
+
+CPU
+  Uso:         2.3%
+  Temperatura: 37.0°C
+
+MEMÓRIA
+  Total:      31957 MB
+  Usada:      5269 MB
+  Livre:      11476 MB
+  Disponível: 26687 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       48°C
+  VRAM usada: 5381 MiB / 12288 MiB
+  VRAM livre: 6537 MiB
+
+TOP 3 PROCESSOS (CPU)
+  message+     1.0%  clickhouse-server
+  root         0.9%  /usr/bin/ollama
+  root         0.3%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         2.2%  /usr/bin/ollama
+  root         2.1%  /usr/bin/python3.13
+  message+     1.8%  clickhouse-server
+
+
+## RESPOSTA FINAL DO MODELO
+
+{"timestamp": "2026-04-26T09:18:34", "cpu": {"uso_pct": 2.3, "temperatura_c": 37}, "memoria": {"total_mb": 31957, "usada_mb": 5269, "livre_mb": 11476, "disponivel_mb": 26687}, "gpu": {"nome": "NVIDIA GeForce RTX 3060", "uso_pct": 0, "temperatura_c": 48, "vram_usada_mib": 5381, "vram_livre_mib": 6537, "vram_total_mib": 12288}}
+
+## VALIDAÇÃO DO JSON
+
+  json_valid      : True
+  timestamp_valid : True
+  campos presentes: 13/13
+  campos ausentes : nenhum
+  erros de tipo   : nenhum
+  texto extra     : False
+  json_acc_auto   : 4
+  grounding_fail  : False
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 438
+  tokens output  : 23
+  duração        : 715.5 ms
+  velocidade     : 66.8 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 606
+  tokens output  : 146
+  duração        : 2836.5 ms
+  velocidade     : 64.6 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1213
+  duração total  : 3552.0 ms
+  velocidade avg : 64.9 tok/s

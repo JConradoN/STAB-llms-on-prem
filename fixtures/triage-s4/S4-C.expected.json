@@ -1,0 +1,38 @@
+{
+  "triage_id": "S4-C",
+  "description": "Baixa severidade — sem críticos, ordenação warning > info; desempate entre infos por recência",
+  "cases": ["info-001", "info-003", "warning-003"],
+  "log_files": {
+    "info-001": "fixtures/health-logs/info/info-001.log",
+    "info-003": "fixtures/health-logs/info/info-003.log",
+    "warning-003": "fixtures/health-logs/warning/warning-003.log"
+  },
+  "tiebreak_rationale": {
+    "rank2_info-001": "info-001 (14:01:17Z) mais recente que info-003 (10:22:16Z) — desempate por timestamp quando primary_issue == none em ambos"
+  },
+  "prioridade_expected": [
+    {
+      "rank": 1,
+      "case_id": "warning-003",
+      "host": "fox-node-08",
+      "severity": "warning",
+      "escalation": "monitor"
+    },
+    {
+      "rank": 2,
+      "case_id": "info-001",
+      "host": "fox-node-01",
+      "severity": "info",
+      "escalation": "none"
+    },
+    {
+      "rank": 3,
+      "case_id": "info-003",
+      "host": "fox-node-06",
+      "severity": "info",
+      "escalation": "none"
+    }
+  ],
+  "timestamp_triage_expected": "2026-04-24T14:01:17Z",
+  "hosts_expected": ["fox-node-08", "fox-node-01", "fox-node-06"]
+}

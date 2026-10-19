@@ -1,0 +1,113 @@
+# S1 — Run 3
+# Modelo         : bonsai:27b-ternary-5060ti
+# Timestamp      : 2026-07-18 11:42:41
+# Temperatura    : 0
+# API            : http://localhost:11436/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+18/07/2026 11:42:44
+
+CPU
+  Uso:         8.0%
+  Temperatura: 39.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      22420 MB
+  Livre:      56629 MB
+  Disponível: 103914 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       36°C
+  VRAM usada: 11852 MiB / 12288 MiB
+  VRAM livre: 61 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       38°C
+  VRAM usada: 11117 MiB / 12288 MiB
+  VRAM livre: 795 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         1.1%  /app/venv_k3s/bin/python3
+  root         0.7%  /usr/bin/cadvisor
+  root         0.5%  /opt/sms_powerview/lib/runtime/bin/java
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         2.9%  /opt/sms_powerview/lib/runtime/bin/java
+  conrado      2.6%  ~/.local/share/claudio-venv/bin/python
+  root         2.3%  /app/llama-server
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+18/07/2026 11:42:44
+
+CPU
+  Uso:         8.0%
+  Temperatura: 39.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      22420 MB
+  Livre:      56629 MB
+  Disponível: 103914 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       36°C
+  VRAM usada: 11852 MiB / 12288 MiB
+  VRAM livre: 61 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       38°C
+  VRAM usada: 11117 MiB / 12288 MiB
+  VRAM livre: 795 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         1.1%  /app/venv_k3s/bin/python3
+  root         0.7%  /usr/bin/cadvisor
+  root         0.5%  /opt/sms_powerview/lib/runtime/bin/java
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         2.9%  /opt/sms_powerview/lib/runtime/bin/java
+  conrado      2.6%  ~/.local/share/claudio-venv/bin/python
+  root         2.3%  /app/llama-server
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 346
+  tokens output  : 96
+  duração        : N/A ms
+  velocidade     : N/A tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 758
+  tokens output  : 427
+  duração        : N/A ms
+  velocidade     : N/A tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1627
+  duração total  : N/A ms
+  velocidade avg : N/A tok/s

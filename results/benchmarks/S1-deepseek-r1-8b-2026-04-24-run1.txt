@@ -1,0 +1,48 @@
+# S1 — Run 1
+# Modelo         : deepseek-r1:8b
+# Timestamp      : 2026-04-24 15:02:28
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : NENHUMA
+Argumento : 
+Tool válida: None
+Execução OK: None
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+(nenhum)
+
+## RESPOSTA FINAL DO MODELO
+
+[ERRO DE API] Erro HTTP da API Ollama: 400 Client Error: Bad Request for url: http://localhost:11434/api/chat — body: {"error":"registry.ollama.ai/library/deepseek-r1:8b does not support tools"}
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : N/A
+  tokens output  : N/A
+  duração        : N/A ms
+  velocidade     : N/A tok/s
+  thinking chars : N/A
+
+### Turno 2 (tool result → resposta final)
+  (turno não ocorreu — modelo não chamou tool)
+
+### Total do run
+  tokens total   : N/A
+  duração total  : N/A ms
+  velocidade avg : N/A tok/s
+
+## ERRO DE EXECUÇÃO
+
+Erro HTTP da API Ollama: 400 Client Error: Bad Request for url: http://localhost:11434/api/chat — body: {"error":"registry.ollama.ai/library/deepseek-r1:8b does not support tools"}

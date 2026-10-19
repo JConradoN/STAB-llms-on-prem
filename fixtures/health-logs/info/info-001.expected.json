@@ -1,0 +1,10 @@
+{
+  "case_id": "info-001",
+  "severity_expected": "info",
+  "primary_issue": "none",
+  "secondary_issues": [],
+  "host": "fox-node-01",
+  "timestamp": "2026-04-24T14:01:17Z",
+  "requires_action": false,
+  "expected_summary": "Sistema saudável, sem sinais de degradação relevante e sem ação necessária."
+}

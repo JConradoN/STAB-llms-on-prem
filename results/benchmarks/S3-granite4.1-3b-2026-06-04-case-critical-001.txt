@@ -1,0 +1,111 @@
+# S3 — Case critical-001  (Run 3)
+# Modelo         : granite4.1:3b
+# Timestamp      : 2026-06-04 02:01:43
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S3-log-analysis-classify.md seção 5
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Leia o arquivo de log em ./fixtures/health-logs/critical/critical-001.log e analise seu conteúdo.
+Com base nas linhas do log, gere um JSON com o seguinte schema:
+{{
+  "case_id": "<nome do arquivo de log sem extensão, ex: warning-001>",
+  "severity": "<info|warning|critical>",
+  "primary_issue": "<identificador snake_case do problema principal, ex: disk_full, service_failed, high_cpu. Use 'none' se tudo OK>",
+  "secondary_issues": ["<lista de problemas secundários>"],
+  "host": "<hostname extraído do log>",
+  "timestamp": "<timestamp da última linha do log em ISO 8601 com Z>",
+  "requires_action": <true se severity for warning ou critical, false se info>,
+  "summary": "<resumo operacional em português do Brasil, 1 a 2 frases>"
+}}
+Regras de classificação:
+- critical: qualquer linha com level=CRITICAL
+- warning: nenhuma CRITICAL, mas pelo menos uma WARNING
+- info: todas as linhas são INFO
+Use APENAS os seguintes identificadores para primary_issue e secondary_issues:
+  none
+  high_cpu_usage
+  elevated_application_latency
+  database_unavailable
+  disk_critical_on_var
+  postgresql_service_failed
+  redis_service_failed
+  backup_volume_high_usage
+  session_api_error_rate_elevated
+Não use frases livres nem outros identificadores.
+Responda APENAS com o JSON. Sem markdown. Sem texto adicional.
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : read_file
+Argumento : ./fixtures/health-logs/critical/critical-001.log
+Tool válida: True
+Leitura OK : True
+Extra tool calls (anomalia): 0
+
+## CONTEÚDO DO ARQUIVO LIDO (primeiras 20 linhas)
+
+2026-04-24T16:44:21Z host=fox-node-03 component=health-check level=INFO message="Starting scheduled health check"
+2026-04-24T16:44:22Z host=fox-node-03 component=disk level=CRITICAL mount=/var usage_percent=97 threshold=95 message="Disk critically full"
+2026-04-24T16:44:23Z host=fox-node-03 component=systemd level=CRITICAL service=postgresql status=failed message="Service failed to start"
+2026-04-24T16:44:24Z host=fox-node-03 component=db level=CRITICAL connect_timeout_ms=5000 message="Database unavailable"
+2026-04-24T16:44:25Z host=fox-node-03 component=health-check level=CRITICAL overall_status=failed message="Immediate action required"
+
+## RESPOSTA FINAL DO MODELO
+
+{
+  "case_id": "critical-001",
+  "severity": "critical",
+  "primary_issue": "database_unavailable",
+  "secondary_issues": [
+    "disk_critical_on_var",
+    "postgresql_service_failed"
+  ],
+  "host": "fox-node-03",
+  "timestamp": "2026-04-24T16:44:25Z",
+  "requires_action": true,
+  "summary": "O banco de dados está inoperante e o serviço PostgreSQL não está iniciando, exigindo intervenção imediata."
+}
+
+## VALIDAÇÃO DETALHADA
+
+  json_valid              : True
+  severity_match          : True
+    expected : critical
+  primary_issue_match     : False
+    expected : disk_critical_on_var
+  secondary_issues_match  : False
+    expected : ['postgresql_service_failed', 'database_unavailable']
+  requires_action_match   : True
+    expected : True
+  host_match              : True
+    expected : fox-node-03
+  timestamp_match         : True
+    expected : 2026-04-24T16:44:25Z
+  summary_present         : True
+  matches_total           : 5/7
+  class_acc_auto          : 2
+  parse_acc_auto          : 2
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call read_file)
+  tokens input   : 540
+  tokens output  : 44
+  duração        : 1091.3 ms
+  velocidade     : 72.8 tok/s
+  thinking chars : 0
+
+### Turno 2 (conteúdo do arquivo → JSON de classificação)
+  tokens input   : 784
+  tokens output  : 117
+  duração        : 2039.0 ms
+  velocidade     : 73.5 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1485
+  duração total  : 3130.3 ms
+  velocidade avg : 73.3 tok/s

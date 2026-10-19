@@ -1,0 +1,110 @@
+# S3 — Case info-001  (Run 1)
+# Modelo         : ornith:9b
+# Timestamp      : 2026-06-28 21:36:00
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S3-log-analysis-classify.md seção 5
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Leia o arquivo de log em ./fixtures/health-logs/info/info-001.log e analise seu conteúdo.
+Com base nas linhas do log, gere um JSON com o seguinte schema:
+{{
+  "case_id": "<nome do arquivo de log sem extensão, ex: warning-001>",
+  "severity": "<info|warning|critical>",
+  "primary_issue": "<identificador snake_case do problema principal, ex: disk_full, service_failed, high_cpu. Use 'none' se tudo OK>",
+  "secondary_issues": ["<lista de problemas secundários>"],
+  "host": "<hostname extraído do log>",
+  "timestamp": "<timestamp da última linha do log em ISO 8601 com Z>",
+  "requires_action": <true se severity for warning ou critical, false se info>,
+  "summary": "<resumo operacional em português do Brasil, 1 a 2 frases>"
+}}
+Regras de classificação:
+- critical: qualquer linha com level=CRITICAL
+- warning: nenhuma CRITICAL, mas pelo menos uma WARNING
+- info: todas as linhas são INFO
+Use APENAS os seguintes identificadores para primary_issue e secondary_issues:
+  none
+  high_cpu_usage
+  elevated_application_latency
+  database_unavailable
+  disk_critical_on_var
+  postgresql_service_failed
+  redis_service_failed
+  backup_volume_high_usage
+  session_api_error_rate_elevated
+Não use frases livres nem outros identificadores.
+Responda APENAS com o JSON. Sem markdown. Sem texto adicional.
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : read_file
+Argumento : ./fixtures/health-logs/info/info-001.log
+Tool válida: True
+Leitura OK : True
+Extra tool calls (anomalia): 0
+
+## CONTEÚDO DO ARQUIVO LIDO (primeiras 20 linhas)
+
+2026-04-24T14:01:12Z host=fox-node-01 component=health-check level=INFO message="Starting scheduled health check"
+2026-04-24T14:01:13Z host=fox-node-01 component=cpu level=INFO usage_percent=21 message="CPU usage within normal range"
+2026-04-24T14:01:14Z host=fox-node-01 component=memory level=INFO usage_percent=48 message="Memory usage within normal range"
+2026-04-24T14:01:15Z host=fox-node-01 component=disk level=INFO mount=/ usage_percent=62 message="Disk usage acceptable"
+2026-04-24T14:01:16Z host=fox-node-01 component=systemd level=INFO service=nginx status=active message="Service is healthy"
+2026-04-24T14:01:17Z host=fox-node-01 component=health-check level=INFO overall_status=ok message="No action required"
+
+## RESPOSTA FINAL DO MODELO
+
+[ERRO DE API] Erro HTTP da API Ollama: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:11434/api/chat — body: <!doctype html>
+<html lang=en>
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>
+
+
+## VALIDAÇÃO DETALHADA
+
+  json_valid              : False
+  severity_match          : False
+    expected : info
+  primary_issue_match     : False
+    expected : none
+  secondary_issues_match  : False
+    expected : []
+  requires_action_match   : False
+    expected : False
+  host_match              : False
+    expected : fox-node-01
+  timestamp_match         : False
+    expected : 2026-04-24T14:01:17Z
+  summary_present         : False
+  matches_total           : 0/7
+  class_acc_auto          : 0
+  parse_acc_auto          : 0
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call read_file)
+  tokens input   : 638
+  tokens output  : 83
+  duração        : N/A ms
+  velocidade     : N/A tok/s
+  thinking chars : 0
+
+### Turno 2 (conteúdo do arquivo → JSON de classificação)
+  (turno não ocorreu — modelo não chamou tool)
+
+### Total do run
+  tokens total   : N/A
+  duração total  : N/A ms
+  velocidade avg : N/A tok/s
+
+## ERRO DE EXECUÇÃO
+
+Erro HTTP da API Ollama: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:11434/api/chat — body: <!doctype html>
+<html lang=en>
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>
+

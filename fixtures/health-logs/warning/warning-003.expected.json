@@ -1,0 +1,10 @@
+{
+  "case_id": "warning-003",
+  "severity_expected": "warning",
+  "primary_issue": "elevated_application_latency",
+  "secondary_issues": [],
+  "host": "fox-node-08",
+  "timestamp": "2026-04-24T12:48:09Z",
+  "requires_action": true,
+  "expected_summary": "Latência da aplicação significativamente acima da linha de base, CPU e memória normais, serviço ainda responde mas requer investigação."
+}

@@ -1,0 +1,40 @@
+{
+  "triage_id": "S4-B",
+  "description": "Três críticos — desempate por primary_issue e secondary_issues (cascata de infraestrutura)",
+  "cases": ["critical-001", "critical-003", "mixed-001"],
+  "log_files": {
+    "critical-001": "fixtures/health-logs/critical/critical-001.log",
+    "critical-003": "fixtures/health-logs/critical/critical-003.log",
+    "mixed-001": "fixtures/health-logs/mixed/mixed-001.log"
+  },
+  "tiebreak_rationale": {
+    "rank1_critical-001": "disk_critical_on_var como primary (causa raiz cascata): disco cheio → PostgreSQL falhou → banco indisponível",
+    "rank2_critical-003": "redis_service_failed como primary + disk_critical_on_var como secondary (dois problemas de infraestrutura crítica simultâneos)",
+    "rank3_mixed-001": "redis_service_failed como primary + backup_volume_high_usage + session_api (impactos secundários de camada de aplicação, menos críticos que infra)"
+  },
+  "prioridade_expected": [
+    {
+      "rank": 1,
+      "case_id": "critical-001",
+      "host": "fox-node-03",
+      "severity": "critical",
+      "escalation": "immediate"
+    },
+    {
+      "rank": 2,
+      "case_id": "critical-003",
+      "host": "fox-node-10",
+      "severity": "critical",
+      "escalation": "immediate"
+    },
+    {
+      "rank": 3,
+      "case_id": "mixed-001",
+      "host": "fox-node-04",
+      "severity": "critical",
+      "escalation": "immediate"
+    }
+  ],
+  "timestamp_triage_expected": "2026-04-24T18:07:49Z",
+  "hosts_expected": ["fox-node-03", "fox-node-10", "fox-node-04"]
+}

@@ -1,0 +1,37 @@
+# S1 — Run 3
+# Modelo    : phi4:14b
+# Data/hora : 2026-06-04 01:26:09
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+     Para encaminhar a saída do script `~/scripts/health.sh` para um destino con
+configurado como `MONITOR_HEALTH`, você pode usar o seguinte comando no ter
+terminal:
+
+```bash
+./~scripts/health.sh > /path/to/MONITOR_HEALTH 2>&1
+```
+
+Certifique-se de substituir `/path/to/MONITOR_HEALTH` pelo caminho real ou 
+variável que representa seu destino configurado `MONITOR_HEALTH`.
+
+Se o script não puder ser executado por qualquer motivo (por exemplo, permi
+permissões insuficientes, arquivos ausentes ou erros dentro do próprio scri
+script), você deve receber uma mensagem de erro. Nesse caso, responda:
+
+```
+ERRO: não consegui executar health.sh
+``` 
+
+Certifique-se de que o script tenha permissões de execução:
+
+```bash
+chmod +x ~/scripts/health.sh
+```
+
+Se houver problemas ao acessar ou executar o script, incluindo permissões i
+insuficientes ou caminho incorreto, a resposta deve ser conforme mencionado
+mencionado acima.
+

@@ -1,0 +1,13 @@
+# S1 — Run 4
+# Modelo    : rnj-1:8b
+# Data/hora : 2026-06-04 01:38:26
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+        ```bash
+MONITOR_HEALTH=$(~/scripts/health.sh 2>&1)
+echo "$MONITOR_HEALTH"
+```
+

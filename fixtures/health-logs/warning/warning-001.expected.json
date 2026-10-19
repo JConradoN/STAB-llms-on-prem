@@ -1,0 +1,12 @@
+{
+  "case_id": "warning-001",
+  "severity_expected": "warning",
+  "primary_issue": "high_cpu_usage",
+  "secondary_issues": [
+    "elevated_application_latency"
+  ],
+  "host": "fox-node-02",
+  "timestamp": "2026-04-24T15:10:07Z",
+  "requires_action": true,
+  "expected_summary": "Servidor com degradação moderada, CPU acima do limiar de alerta e latência elevada, mas serviço ainda responde."
+}

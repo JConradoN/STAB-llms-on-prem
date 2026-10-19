@@ -1,0 +1,10 @@
+{
+  "case_id": "critical-002",
+  "severity_expected": "critical",
+  "primary_issue": "database_unavailable",
+  "secondary_issues": [],
+  "host": "fox-node-09",
+  "timestamp": "2026-04-24T13:33:21Z",
+  "requires_action": true,
+  "expected_summary": "Banco de dados indisponível com timeout de conexão, demais componentes normais, ação imediata necessária."
+}

@@ -1,0 +1,109 @@
+# S3 — Case info-001  (Run 1)
+# Modelo         : granite4.1:8b
+# Timestamp      : 2026-06-04 02:07:27
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S3-log-analysis-classify.md seção 5
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Leia o arquivo de log em ./fixtures/health-logs/info/info-001.log e analise seu conteúdo.
+Com base nas linhas do log, gere um JSON com o seguinte schema:
+{{
+  "case_id": "<nome do arquivo de log sem extensão, ex: warning-001>",
+  "severity": "<info|warning|critical>",
+  "primary_issue": "<identificador snake_case do problema principal, ex: disk_full, service_failed, high_cpu. Use 'none' se tudo OK>",
+  "secondary_issues": ["<lista de problemas secundários>"],
+  "host": "<hostname extraído do log>",
+  "timestamp": "<timestamp da última linha do log em ISO 8601 com Z>",
+  "requires_action": <true se severity for warning ou critical, false se info>,
+  "summary": "<resumo operacional em português do Brasil, 1 a 2 frases>"
+}}
+Regras de classificação:
+- critical: qualquer linha com level=CRITICAL
+- warning: nenhuma CRITICAL, mas pelo menos uma WARNING
+- info: todas as linhas são INFO
+Use APENAS os seguintes identificadores para primary_issue e secondary_issues:
+  none
+  high_cpu_usage
+  elevated_application_latency
+  database_unavailable
+  disk_critical_on_var
+  postgresql_service_failed
+  redis_service_failed
+  backup_volume_high_usage
+  session_api_error_rate_elevated
+Não use frases livres nem outros identificadores.
+Responda APENAS com o JSON. Sem markdown. Sem texto adicional.
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : read_file
+Argumento : ./fixtures/health-logs/info/info-001.log
+Tool válida: True
+Leitura OK : True
+Extra tool calls (anomalia): 0
+
+## CONTEÚDO DO ARQUIVO LIDO (primeiras 20 linhas)
+
+2026-04-24T14:01:12Z host=fox-node-01 component=health-check level=INFO message="Starting scheduled health check"
+2026-04-24T14:01:13Z host=fox-node-01 component=cpu level=INFO usage_percent=21 message="CPU usage within normal range"
+2026-04-24T14:01:14Z host=fox-node-01 component=memory level=INFO usage_percent=48 message="Memory usage within normal range"
+2026-04-24T14:01:15Z host=fox-node-01 component=disk level=INFO mount=/ usage_percent=62 message="Disk usage acceptable"
+2026-04-24T14:01:16Z host=fox-node-01 component=systemd level=INFO service=nginx status=active message="Service is healthy"
+2026-04-24T14:01:17Z host=fox-node-01 component=health-check level=INFO overall_status=ok message="No action required"
+
+## RESPOSTA FINAL DO MODELO
+
+{
+  "case_id": "info-001",
+  "severity": "info",
+  "primary_issue": "none",
+  "secondary_issues": [],
+  "host": "fox-node-01",
+  "timestamp": "2026-04-24T14:01:17Z",
+  "requires_action": false,
+  "summary": "Todos os componentes do sistema estão operacionais normalmente; nenhuma ação necessária."
+}
+
+## VALIDAÇÃO DETALHADA
+
+  json_valid              : True
+  severity_match          : True
+    expected : info
+  primary_issue_match     : True
+    expected : none
+  secondary_issues_match  : True
+    expected : []
+  requires_action_match   : True
+    expected : False
+  host_match              : True
+    expected : fox-node-01
+  timestamp_match         : True
+    expected : 2026-04-24T14:01:17Z
+  summary_present         : True
+  matches_total           : 7/7
+  class_acc_auto          : 4
+  parse_acc_auto          : 4
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call read_file)
+  tokens input   : 538
+  tokens output  : 42
+  duração        : 2104.5 ms
+  velocidade     : 44.3 tok/s
+  thinking chars : 0
+
+### Turno 2 (conteúdo do arquivo → JSON de classificação)
+  tokens input   : 810
+  tokens output  : 96
+  duração        : 2964.9 ms
+  velocidade     : 44.0 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1486
+  duração total  : 5069.4 ms
+  velocidade avg : 44.1 tok/s

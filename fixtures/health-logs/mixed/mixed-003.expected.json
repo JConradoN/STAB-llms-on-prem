@@ -1,0 +1,12 @@
+{
+  "case_id": "mixed-003",
+  "severity_expected": "critical",
+  "primary_issue": "postgresql_service_failed",
+  "secondary_issues": [
+    "backup_volume_high_usage"
+  ],
+  "host": "fox-node-12",
+  "timestamp": "2026-04-24T19:55:14Z",
+  "requires_action": true,
+  "expected_summary": "Falha crítica do PostgreSQL com banco de dados indisponível e volume de backup com ocupação elevada, ação imediata necessária."
+}

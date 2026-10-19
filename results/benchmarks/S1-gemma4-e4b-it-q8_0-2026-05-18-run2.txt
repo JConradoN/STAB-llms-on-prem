@@ -1,0 +1,113 @@
+# S1 — Run 2
+# Modelo         : gemma4:e4b-it-q8_0
+# Timestamp      : 2026-05-18 02:16:47
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+18/05/2026 02:16:48
+
+CPU
+  Uso:         1.2%
+  Temperatura: 60.0°C
+
+MEMÓRIA
+  Total:      124349 MB
+  Usada:      10648 MB
+  Livre:      19567 MB
+  Disponível: 113700 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       53°C
+  VRAM usada: 6325 MiB / 12288 MiB
+  VRAM livre: 5587 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       56°C
+  VRAM usada: 6719 MiB / 12288 MiB
+  VRAM livre: 5193 MiB
+
+TOP 3 PROCESSOS (CPU)
+  conrado      5.6%  ps
+  root         1.9%  /usr/bin/ollama
+  conrado      0.3%  claude
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         1.5%  /usr/bin/ollama
+  root         0.9%  /app/venv_k3s/bin/python3
+  libvirt+     0.8%  /usr/bin/qemu-system-x86_64
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+18/05/2026 02:16:48
+
+CPU
+  Uso:         1.2%
+  Temperatura: 60.0°C
+
+MEMÓRIA
+  Total:      124349 MB
+  Usada:      10648 MB
+  Livre:      19567 MB
+  Disponível: 113700 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       53°C
+  VRAM usada: 6325 MiB / 12288 MiB
+  VRAM livre: 5587 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       56°C
+  VRAM usada: 6719 MiB / 12288 MiB
+  VRAM livre: 5193 MiB
+
+TOP 3 PROCESSOS (CPU)
+  conrado      5.6%  ps
+  root         1.9%  /usr/bin/ollama
+  conrado      0.3%  claude
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         1.5%  /usr/bin/ollama
+  root         0.9%  /app/venv_k3s/bin/python3
+  libvirt+     0.8%  /usr/bin/qemu-system-x86_64
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 136
+  tokens output  : 20
+  duração        : 967.5 ms
+  velocidade     : 49.8 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 522
+  tokens output  : 356
+  duração        : 8757.4 ms
+  velocidade     : 46.8 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1034
+  duração total  : 9724.9 ms
+  velocidade avg : 47.0 tok/s

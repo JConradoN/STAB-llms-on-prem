@@ -1,0 +1,478 @@
+% ============================================================
+% KDMILE 2026 — STAB Framework Paper
+% Deadline: 08/jun/2026 | Limite: 8 páginas
+% Submissão: https://jems3.sbc.org.br/kdmile2026
+% ============================================================
+
+\documentclass{kdmile}
+
+\usepackage{graphicx,url}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{float}
+
+% kdmile.cls é baseado em ACM Trans — define resumo e abstract manualmente
+\newenvironment{abstracten}{%
+  \vspace{4pt}\begin{center}\normalsize\bfseries Abstract\end{center}%
+  \noindent\small\ignorespaces
+}{\normalsize\vspace{4pt}}
+
+\newenvironment{resumo}{%
+  \vspace{4pt}\begin{center}\normalsize\bfseries Resumo\end{center}%
+  \noindent\small\ignorespaces
+}{\normalsize\vspace{4pt}}
+
+\providecommand{\address}[1]{}
+\renewcommand{\institutename}{}
+
+% ── Cabeçalho ───────────────────────────────────────────────
+\markboth{Nogueira et al.}{STAB: A Complexity-Ladder Framework for Evaluating Local LLMs}
+
+% ── Título ──────────────────────────────────────────────────
+\title{STAB: A Complexity-Ladder Framework for Evaluating Local LLMs as Autonomous Agents}
+
+% ── Autores ─────────────────────────────────────────────────
+\author{
+  João Conrado V. Nogueira\\
+  {\small Pesquisador Independente, Macapá, AP, Brasil}
+}
+
+% ============================================================
+\begin{document}
+\maketitle
+% Corrige rodapé: cls hardcoda KDMiLe 2025; sobrescreve após \maketitle
+\gdef\@runningfoot{\@journalName, KDMiLe 2026.}
+\gdef\@firstfoot{\@journalName, KDMiLe 2026.}
+% ============================================================
+
+% ── Abstract (EN) ───────────────────────────────────────────
+\begin{abstracten}
+Running LLMs as autonomous agents on local hardware is harder than it looks.
+%
+This paper reports STAB: a four-level complexity ladder (S1$\rightarrow$S4)
+combined with a 12-hour temporal stability battery, built to expose
+failure modes in on-premise tool-calling agents.
+%
+We tested eight models from four families (Qwen, Gemma, Llama, Mistral)
+on a single NVIDIA RTX~3060 (12~GB VRAM).
+%
+The central finding is that most failures trace back to the instruction and
+contextual decision layer—not to raw model capacity.
+%
+Two phenomena stood out: \emph{tool-skipping} triggered by descriptive
+filenames (H12), and the orthogonality between format compliance and semantic
+accuracy (H10).
+%
+\texttt{gemma4:e4b} was the only model to pass all four levels without a
+single failure.
+
+\textbf{Keywords:} Local LLMs, Autonomous Agents, Tool Calling, Instruction
+Following, Small Language Models, On-Premise Benchmark.
+\end{abstracten}
+
+% ── Resumo (PT) ─────────────────────────────────────────────
+\begin{resumo}
+O uso de Large Language Models (LLMs) em sistemas agênticos locais enfrenta
+desafios críticos de consistência e confiabilidade, especialmente em hardware
+de consumo.
+%
+Este trabalho apresenta o protocolo STAB, uma metodologia de avaliação em escada
+de complexidade (S1$\rightarrow$S4) combinada a um protocolo de estabilidade
+temporal para diagnosticar falhas em agentes on-premise.
+%
+Avaliamos oito modelos de quatro famílias (Qwen, Gemma, Llama e Mistral) em
+servidor com GPU NVIDIA RTX~3060 (12~GB VRAM).
+%
+Os resultados revelam que as falhas agênticas originam-se predominantemente na
+camada de instrução e decisão contextual, e não na capacidade bruta dos modelos.
+%
+Identificamos o fenômeno de \emph{tool-skipping} por nomeação semântica (H12) e
+demonstramos que conformidade de formato e acurácia semântica são dimensões
+ortogonais (H10).
+%
+O modelo \texttt{gemma4:e4b} destacou-se como referência de maior
+confiabilidade, mantendo desempenho perfeito em todos os níveis de complexidade.
+
+\textbf{Palavras-chave:} LLMs Locais, Agentes Autônomos, Tool Calling,
+Instruction Following, Small Language Models, Benchmark On-Premise.
+\end{resumo}
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+
+Getting a local LLM to reliably call tools—not just chat—is harder than it looks.
+Models that score well on standard benchmarks often break in agentic settings:
+they skip tool invocations, hallucinate results, or return correct JSON
+wrapped in markdown that the calling script cannot parse.
+Cloud-based evaluations such as BFCL and AgentBench do not surface these issues
+because they assume virtually unlimited compute and allow multi-pass retries.
+On a single 12\,GB GPU, $T=0$, and one-shot execution, the failure modes look
+quite different—and no existing benchmark was designed specifically to expose them.
+
+% ── Parágrafo 2: contribuições ──────────────────────────────
+This paper introduces STAB to fill that gap. The main contributions are:
+
+\begin{itemize}
+  \item \textbf{STAB Framework:} A four-level methodology (S1$\rightarrow$S4)
+        evaluating from basic tool use to autonomous multi-step planning,
+        validated by a temporal stability protocol.
+
+  \item \textbf{Failure Taxonomy:} Classification of agentic errors across four
+        layers: protocol, decision, format, and grounding.
+
+  \item \textbf{H12 — Semantic Tool-Skipping:} Empirical identification of
+        tool invocation omission induced by descriptive file names.
+
+  \item \textbf{H10 — Orthogonality:} Evidence that format compliance and
+        semantic accuracy are independent evaluation dimensions.
+\end{itemize}
+
+% ── Parágrafo 3: organização ────────────────────────────────
+The paper is organized as follows: Section~\ref{sec:related} reviews related
+work; Section~\ref{sec:method} describes the STAB methodology;
+Section~\ref{sec:results} presents results and analysis;
+Section~\ref{sec:discussion} discusses findings; and
+Section~\ref{sec:conclusion} concludes the work.
+
+% ============================================================
+\section{Related Work}
+\label{sec:related}
+
+\textbf{Agent benchmarks and tool use.}
+The Berkeley Function Calling Leaderboard (BFCL)~\cite{patil2025} is the
+de-facto benchmark for tool evaluation, focusing predominantly on cloud models
+and large LLMs.
+AgentBench~\cite{liu2024} proposes multi-environment evaluation across eight
+domains, identifying instruction following as the primary obstacle to autonomy.
+SLM-Bench~\cite{pham2025} introduces environmental impact metrics and
+controlled hardware setups, approaching our local evaluation methodology.
+
+\textbf{Failure modes and instruction following.}
+A taxonomy of 14 failure modes in multi-agent systems is proposed
+in~\cite{cemri2025}, highlighting specification disobedience.
+SLM performance for function calling on edge devices is mapped
+in~\cite{kavathekar2025}, while~\cite{jhandi2026} demonstrates that SLMs with
+up to 350M parameters can outperform larger models in tool use with targeted
+fine-tuning. A decline in instruction compliance in smaller models is documented
+through the KCIF dataset in~\cite{murthy2024}, and training pipelines for
+enterprise scenarios requiring deterministic tool use are explored
+in~\cite{zeng2024}.
+
+\textbf{Differentiation.}
+STAB is positioned differently: it targets on-premise hardware, introduces
+a temporal stability battery, and explicitly probes contextual biases such as
+semantic naming—none of which appear in the benchmarks reviewed above.
+
+% ============================================================
+\section{Methodology}
+\label{sec:method}
+
+\subsection{Experimental Setup}
+
+\begin{table}[H]
+\centering
+\caption{Experimental environment.}
+\label{tab:setup}
+\begin{tabular}{ll}
+\toprule
+\textbf{Component} & \textbf{Specification} \\
+\midrule
+CPU     & Intel Core i5-10400F (6c/12t) \\
+RAM     & 32\,GB DDR4 \\
+GPU     & NVIDIA RTX 3060 (12\,GB VRAM) \\
+OS      & Ubuntu 24.04 \\
+Runtime & Ollama (REST \texttt{/api/chat}), $T=0$, \texttt{stream=false} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{STAB Framework — Complexity Ladder}
+
+The STAB framework organizes evaluation into four complexity levels, each
+requiring greater cognitive and operational capability from the agent:
+
+\begin{table}[H]
+\centering
+\caption{STAB complexity ladder.}
+\label{tab:stab}
+\begin{tabular}{clllcc}
+\toprule
+\textbf{Level} & \textbf{Name} & \textbf{Tool} & \textbf{Objective} & \textbf{K} & \textbf{Key Metric} \\
+\midrule
+S1 & Protocol      & \texttt{run\_bash}  & Tool invocation + return     & 5 & TOOL-ACC \\
+S2 & Extraction    & \texttt{run\_bash}  & Structured JSON output       & 5 & JSON-ACC \\
+S3 & Log Analysis  & \texttt{read\_file} & Semantic classification      & 4 & CLASS-ACC \\
+S4 & Multi-log     & \texttt{read\_file} & Multi-step triage \& ranking & 3 & TRIAGE-ACC \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The framework utilizes synthetic fixtures rather than production logs to ensure
+reproducibility and variable control. Each fixture consists of an input file
+(.log) and a ground truth JSON file (.expected.json). The ground truth employs a
+controlled vocabulary for issue identification (e.g., \texttt{high\_cpu\_usage},
+\texttt{database\_unavailable}), transforming open-ended evaluation into
+rigorous classification and extraction.
+
+Each test follows a two-turn execution protocol via the Ollama REST API
+(\texttt{/api/chat}). In Turn 1, the model receives the prompt and the JSON
+Schema for the tools, producing a structured \texttt{tool\_call}. The script
+executes the operation on the host and captures \texttt{stdout}. In Turn 2, this
+result is returned to the model, which generates the final JSON response.
+Determinism is ensured by setting temperature to zero and \texttt{stream=false}.
+
+\subsection{Models Evaluated}
+
+\begin{table}[H]
+\centering
+\caption{Models evaluated.}
+\label{tab:models}
+\begin{tabular}{llrll}
+\toprule
+\textbf{Model} & \textbf{Family} & \textbf{VRAM (MiB)} & \textbf{Type} & \textbf{Final Status} \\
+\midrule
+\texttt{gemma4:e4b}             & Gemma4    & 9{,}821 & Zero-shot  & \textbf{Reference} \\
+\texttt{qwen3.5:9b}             & Qwen3.5   & 7{,}953 & Zero-shot  & Approved (S2B) \\
+\texttt{qwen3:14b}              & Qwen3     & 9{,}437 & Zero-shot  & Approved (S1--S3) \\
+\texttt{llama3.1:8b}            & Llama3.1  & 4{,}868 & Zero-shot  & Approved (Partial) \\
+\texttt{llama3-groq-tool-use:8b}& Llama3    & 4{,}754 & Fine-tuned & Approved (Partial) \\
+\texttt{mistral:7b}             & Mistral   & 4{,}458 & Zero-shot  & Discarded (H14) \\
+\texttt{phi4-mini}              & Phi4      & 2{,}500 & Zero-shot  & Discarded (H13) \\
+\texttt{qwen3.5:2b}             & Qwen3.5   & 3{,}829 & Zero-shot  & Discarded (H16) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Metrics}
+
+Evaluation employs an ordinal scale from 0 to 4, where 4 represents a perfect
+run (correct tool invocation, valid JSON output, and accurate semantic content)
+and 0 represents complete failure. Metrics are grouped into three categories:
+consistency metrics (CON, TOOL-CON) assess run-to-run stability; instruction and
+accuracy metrics (INST, TOOL-ACC, JSON-ACC, CLASS-ACC, PARSE-ACC, CHAIN-ACC,
+TRIAGE-ACC) measure correctness at each STAB level; and the composite STAB score
+reflects temporal stability across the full 12-hour battery protocol.
+
+\begin{table}[H]
+\centering
+\caption{Evaluation metrics (ordinal scale 0--4).}
+\label{tab:metrics}
+\begin{tabular}{ll}
+\toprule
+\textbf{Metric} & \textbf{Description} \\
+\midrule
+CON       & Consistency: structural and decision stability across runs \\
+TOOL-CON  & Tool consistency: repeated valid tool calls \\
+INST      & Instruction adherence: format and constraint compliance \\
+TOOL-ACC  & Functional correctness: right tool, successful execution \\
+JSON-ACC  & JSON accuracy: schema validity and value precision \\
+CLASS-ACC & Classification accuracy: correct global severity \\
+PARSE-ACC & Extraction accuracy: host, issue, timestamp precision \\
+CHAIN-ACC & Chaining accuracy: correct number of tool calls (e.g. 3/3) \\
+TRIAGE-ACC& Triage accuracy: correct priority rank and escalation rule \\
+STAB      & Temporal stability: score maintenance across 12\,h batteries \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Failure Taxonomy}
+
+Failures were classified across five layers based on their root cause.
+Protocol-layer failures involve structural violations of the tool-calling format.
+Decision-layer failures indicate contextual reasoning errors, such as inferring
+results without executing the required tool. Format-layer failures produce
+syntactically correct but non-compliant output. Grounding failures generate
+structurally valid but factually fabricated responses. Instruction-layer failures
+stem from ambiguous action interpretation. Each failure is assigned a unique
+code: H-prefixed codes indicate hypothesis-driven findings confirmed through
+controlled experiments, while AP codes mark anomalous patterns identified during
+standard execution runs.
+
+\begin{table}[H]
+\centering
+\caption{Identified failure taxonomy.}
+\label{tab:failures}
+\begin{tabular}{lllll}
+\toprule
+\textbf{Layer} & \textbf{Type} & \textbf{Code} & \textbf{Concrete Example} & \textbf{Model} \\
+\midrule
+Protocol  & Protocol Hallucination  & H13 & JSON in \texttt{content} instead of \texttt{tool\_calls} & phi4-mini \\
+Protocol  & Echo-tool               & H16 & Delivers JSON via \texttt{run\_bash echo}                & qwen3.5:2b \\
+Decision  & Semantic Tool-Skipping  & H12 & Skipped read; inferred severity from filename            & qwen3:14b \\
+Format    & Markdown Wrapper        & AP2 & Correct JSON wrapped in \texttt{```json}                 & qwen3.5:9b \\
+Grounding & Silent Grounding        & H14 & Perfect JSON with fabricated hardware data               & mistral:7b \\
+Instruction& Action Ambiguity       & AP1 & Used \texttt{cat} instead of executing script            & qwen3.5:9b \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{Results}
+\label{sec:results}
+
+\subsection{Overall Comparison}
+
+Three models failed to clear the early levels: \texttt{phi4-mini} (H13, S1),
+\texttt{qwen3.5:2b} (H16, S2), and \texttt{mistral:7b} (H14, S2)—each for a
+different structural reason.
+Of the five models that continued, \texttt{gemma4:e4b} was the only one to pass
+every level cleanly (S1$\rightarrow$S4; see Table~\ref{tab:results}).
+The sharpest drop appeared at S4: models that had handled S1--S3 without issues
+collapsed on multi-step triage, pointing to a decision-layer ceiling that
+single-step tasks simply do not reveal.
+
+\begin{table}[H]
+\centering
+\caption{STAB scores per model and level (0--4; \textbf{bold} = perfect run).}
+\label{tab:results}
+\begin{tabular}{lccccccl}
+\toprule
+\textbf{Model} & \textbf{S1} & \textbf{S2} & \textbf{S3} & \textbf{S4-A} & \textbf{S4-B} & \textbf{S4-C} & \textbf{S1→S4} \\
+\midrule
+\texttt{gemma4:e4b}              & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{Yes} \\
+\texttt{qwen3.5:9b}              & 4 & 4 (S2B) & 2$^a$ & 4 & 2 & 2 & No \\
+\texttt{qwen3:14b}               & 4 & 4 & 4 & 0 & 0 & 0 & No \\
+\texttt{llama3.1:8b}             & 4 & 4 & 2 & 4 & 2 & 3 & No \\
+\texttt{llama3-groq-tool-use:8b} & 4 & 4 & 4 & 4 & 2 & 2 & No \\
+\texttt{qwen3.5:2b}              & 4 & disc. H16 & --- & --- & --- & --- & No \\
+\texttt{mistral:7b}              & 4 & disc. H14 & --- & --- & --- & --- & No \\
+\texttt{phi4-mini}               & disc. H13 & --- & --- & --- & --- & --- & No \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}
+\footnotesize
+$^a$\,\texttt{qwen3.5:9b} achieved CLASS-ACC=4 in S3-mixed but CON=INST=2 due to
+persistent markdown wrapper, illustrating the orthogonality of dimensions (H10).
+\end{minipage}
+\end{table}
+
+\subsection{Key Findings}
+
+\textbf{H12 — Semantic Tool-Skipping.}
+The \texttt{qwen3:14b} model skipped file reading in S4 scenarios when filenames
+were semantically descriptive (e.g., \texttt{critical-001.log}), inferring
+severity without executing the tool. In the controlled H12 experiment with
+opaque filenames, the model correctly invoked the tool, confirming the
+contextual bias hypothesis. \textbf{Mitigation:} use opaque filenames or
+explicit mandatory-read instructions.
+
+\textbf{H10 — Orthogonality of Format and Semantic Accuracy.}
+Format compliance and semantic accuracy proved to be independent dimensions.
+A model can produce semantically perfect output wrapped in an invalid format
+(markdown), or a structurally valid JSON containing hallucinated data.
+This was exemplified by \texttt{qwen3.5:9b}, which maintained high semantic
+accuracy while failing formatting constraints.
+
+\textbf{gemma4:e4b as Reference Model.}
+The \texttt{gemma4:e4b} model was the only one to achieve perfect scores across
+all levels (S1$\rightarrow$S4) with STAB=4 and a throughput of 73.0\,tok/s.
+Its internal reasoning (\emph{thinking}) activated selectively for high-complexity
+disambiguation scenarios (S4-C, such as timestamp-based tie-breaking),
+indicating adaptive cognitive scaling.
+
+\subsection{Throughput and Latency}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{plot-throughput-kdmile.png}
+  \caption{Average throughput per model and scenario (tok/s), Battery 1.
+           Run~1 excluded (cold start). Variation $<0.2\%$ across batteries
+           confirms hardware-bound throughput.}
+  \label{fig:throughput}
+\end{figure}
+
+Variation between batteries stayed below 0.2\% for all models, confirming
+throughput is hardware-bound rather than prompt-dependent.
+Run~1 of each battery was excluded from the averages (cold start penalty).
+Three performance clusters emerged: \texttt{gemma4:e4b} and the Llama family
+at the top, \texttt{qwen3.5:9b} in the middle, and \texttt{qwen3:14b} at the
+bottom—its S2 latency was inflated by a large internal reasoning trace.
+
+\subsection{Temporal Stability}
+
+All five approved models completed Battery~2 without degradation: agentic
+decisions and semantic accuracy held at STAB=4 throughout.
+The one anomaly was \texttt{qwen3:14b}, whose internal reasoning volume varied
+by 7\% between batteries—but the final output was identical each time, so this
+is a structural quirk of the model's chain-of-thought, not actual instability.
+
+% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+
+\textbf{Failures are instructional, not capacity-based.}
+Two corrective experiments in this study tell the same story.
+Adding an explicit format instruction recovered \texttt{qwen3.5:9b}'s S2B score
+from 2 to 4. Adding a mandatory-read directive eliminated \texttt{qwen3:14b}'s
+tool-skipping entirely.
+Neither fix required changing the model or retraining—only the prompt.
+Model size is therefore a poor proxy for agentic reliability: models above 8B
+clearly have the underlying logic; what breaks them is context misalignment,
+and that is fixable at the instruction layer.
+
+\textbf{Fine-tuned vs.\ zero-shot in on-premise environments.}
+The head-to-head between \path{llama3-groq-tool-use:8b} (fine-tuned) and
+\texttt{llama3.1:8b} (zero-shot) produced a split result.
+On S3-mixed, which requires applying binary precedence rules, the fine-tuned
+model won clearly (Groq=4 vs.\ Llama=2)—specialization works for single-step
+structural compliance.
+But on S4-B and S4-C, both failed.
+This raises a concrete question for the field: does tool-use fine-tuning improve
+structural adherence without touching the multi-step reasoning needed for chained
+decisions? The data here says yes—and that is a meaningful ceiling in current
+tuning pipelines.
+
+\textbf{Practical recommendations.}
+On hardware with 12\,GB VRAM, \texttt{gemma4:e4b} is the clear choice: perfect
+consistency, 73\,tok/s, no prompt engineering required.
+Below 6\,GB, Llama3.1 works—but needs a thin post-processing layer to handle
+format failures.
+The H12 finding also has a security angle: descriptive filenames allow models
+to infer answers and skip the tool call entirely, which means the tool is never
+actually executed.
+Using opaque identifiers, or appending \texttt{[READ REQUIRED]} to the instruction,
+closes that gap.
+
+\textbf{Limitations.}
+The study ran on a single hardware configuration with synthetic fixtures only.
+Those are real constraints, but they also made full reproducibility possible
+and kept variables isolated—a deliberate trade-off.
+The most operationally significant result to carry forward is H14 (silent
+grounding in Mistral): structurally perfect output that is factually wrong
+will not be caught by a JSON parser.
+External semantic validators are not optional in production—they are the only
+safeguard against that specific failure mode.
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Local agent reliability is a three-variable problem: model robustness,
+instruction clarity, and context neutrality.
+All three must hold simultaneously—failure in any one of them breaks the chain.
+\texttt{gemma4:e4b} was the only model in this study to keep all three in check
+across every level, which shows that quantized MoE architectures have crossed a
+practical threshold for structured agentic work on consumer hardware.
+
+The failures in 8B--14B models were, almost without exception, fixable through
+prompt engineering alone—no retraining needed.
+That is an encouraging result for anyone building agents under hardware constraints.
+
+What this study did not cover: real production logs, diverse hardware profiles,
+and grammar-constrained decoding as an alternative to prompt-based format
+enforcement.
+The 12-hour temporal battery also leaves open whether longer deployments surface
+degradation patterns that were not visible here.
+Those are the natural extensions—not by convention, but because the data from
+this study raises those specific questions.
+
+% ============================================================
+\bibliographystyle{kdmile}
+\bibliography{references}
+
+\end{document}

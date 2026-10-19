@@ -1,0 +1,10 @@
+# S1 — Run 1
+# Modelo    : claudio-9b-v2
+# Data/hora : 2026-06-18 23:19:55
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+          Fale pouco — a sua resposta deve ser mínima e direta.
+

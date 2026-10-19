@@ -1,0 +1,103 @@
+# S1 — Run 5
+# Modelo         : gemma4:e4b
+# Timestamp      : 2026-04-24 15:07:05
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+24/04/2026 15:07:09
+
+CPU
+  Uso:         11.1%
+  Temperatura: 42.0°C
+
+MEMÓRIA
+  Total:      31957 MB
+  Usada:      10159 MB
+  Livre:      3474 MB
+  Disponível: 21797 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       49°C
+  VRAM usada: 9821 MiB / 12288 MiB
+  VRAM livre: 2097 MiB
+
+TOP 3 PROCESSOS (CPU)
+  conrado     25.0%  ps
+  root         2.5%  /usr/bin/ollama
+  message+     1.0%  clickhouse-server
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  conrado      5.6%  openclaw-gateway
+  root         4.5%  /usr/bin/ollama
+  root         3.4%  /usr/local/bin/python3
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+24/04/2026 15:07:09
+
+CPU
+  Uso:         11.1%
+  Temperatura: 42.0°C
+
+MEMÓRIA
+  Total:      31957 MB
+  Usada:      10159 MB
+  Livre:      3474 MB
+  Disponível: 21797 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       49°C
+  VRAM usada: 9821 MiB / 12288 MiB
+  VRAM livre: 2097 MiB
+
+TOP 3 PROCESSOS (CPU)
+  conrado     25.0%  ps
+  root         2.5%  /usr/bin/ollama
+  message+     1.0%  clickhouse-server
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  conrado      5.6%  openclaw-gateway
+  root         4.5%  /usr/bin/ollama
+  root         3.4%  /usr/local/bin/python3
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 137
+  tokens output  : 257
+  duração        : 3915.3 ms
+  velocidade     : 73.1 tok/s
+  thinking chars : 955
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 442
+  tokens output  : 277
+  duração        : 4291.9 ms
+  velocidade     : 73.1 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1113
+  duração total  : 8207.2 ms
+  velocidade avg : 73.1 tok/s

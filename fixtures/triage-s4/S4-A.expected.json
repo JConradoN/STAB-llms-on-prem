@@ -1,0 +1,35 @@
+{
+  "triage_id": "S4-A",
+  "description": "Uma de cada severidade — classificação e ordenação básica",
+  "cases": ["info-001", "warning-001", "critical-001"],
+  "log_files": {
+    "info-001": "fixtures/health-logs/info/info-001.log",
+    "warning-001": "fixtures/health-logs/warning/warning-001.log",
+    "critical-001": "fixtures/health-logs/critical/critical-001.log"
+  },
+  "prioridade_expected": [
+    {
+      "rank": 1,
+      "case_id": "critical-001",
+      "host": "fox-node-03",
+      "severity": "critical",
+      "escalation": "immediate"
+    },
+    {
+      "rank": 2,
+      "case_id": "warning-001",
+      "host": "fox-node-02",
+      "severity": "warning",
+      "escalation": "monitor"
+    },
+    {
+      "rank": 3,
+      "case_id": "info-001",
+      "host": "fox-node-01",
+      "severity": "info",
+      "escalation": "none"
+    }
+  ],
+  "timestamp_triage_expected": "2026-04-24T16:44:25Z",
+  "hosts_expected": ["fox-node-03", "fox-node-02", "fox-node-01"]
+}

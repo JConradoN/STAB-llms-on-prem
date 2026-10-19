@@ -1,0 +1,95 @@
+# S3 — Case info-001  (Run 1)
+# Modelo         : gemma4-12b-unsloth:q4km
+# Timestamp      : 2026-06-03 23:54:07
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S3-log-analysis-classify.md seção 5
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Leia o arquivo de log em ./fixtures/health-logs/info/info-001.log e analise seu conteúdo.
+Com base nas linhas do log, gere um JSON com o seguinte schema:
+{{
+  "case_id": "<nome do arquivo de log sem extensão, ex: warning-001>",
+  "severity": "<info|warning|critical>",
+  "primary_issue": "<identificador snake_case do problema principal, ex: disk_full, service_failed, high_cpu. Use 'none' se tudo OK>",
+  "secondary_issues": ["<lista de problemas secundários>"],
+  "host": "<hostname extraído do log>",
+  "timestamp": "<timestamp da última linha do log em ISO 8601 com Z>",
+  "requires_action": <true se severity for warning ou critical, false se info>,
+  "summary": "<resumo operacional em português do Brasil, 1 a 2 frases>"
+}}
+Regras de classificação:
+- critical: qualquer linha com level=CRITICAL
+- warning: nenhuma CRITICAL, mas pelo menos uma WARNING
+- info: todas as linhas são INFO
+Use APENAS os seguintes identificadores para primary_issue e secondary_issues:
+  none
+  high_cpu_usage
+  elevated_application_latency
+  database_unavailable
+  disk_critical_on_var
+  postgresql_service_failed
+  redis_service_failed
+  backup_volume_high_usage
+  session_api_error_rate_elevated
+Não use frases livres nem outros identificadores.
+Responda APENAS com o JSON. Sem markdown. Sem texto adicional.
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : read_file
+Argumento : ./fixtures/health-logs/info/Info-001.log
+Tool válida: True
+Leitura OK : False
+Extra tool calls (anomalia): 0
+
+## CONTEÚDO DO ARQUIVO LIDO (primeiras 20 linhas)
+
+ERRO ao ler arquivo './fixtures/health-logs/info/Info-001.log': [Errno 2] No such file or directory: './fixtures/health-logs/info/Info-001.log'
+
+## RESPOSTA FINAL DO MODELO
+
+I cannot fulfill this request because the file `./fixtures/health-logs/info/Info-001.log` does not exist at the specified path.
+
+## VALIDAÇÃO DETALHADA
+
+  json_valid              : False
+  severity_match          : False
+    expected : info
+  primary_issue_match     : False
+    expected : none
+  secondary_issues_match  : False
+    expected : []
+  requires_action_match   : False
+    expected : False
+  host_match              : False
+    expected : fox-node-01
+  timestamp_match         : False
+    expected : 2026-04-24T14:01:17Z
+  summary_present         : False
+  matches_total           : 0/7
+  class_acc_auto          : 0
+  parse_acc_auto          : 0
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call read_file)
+  tokens input   : 466
+  tokens output  : 47
+  duração        : 3002.9 ms
+  velocidade     : 35.3 tok/s
+  thinking chars : 0
+
+### Turno 2 (conteúdo do arquivo → JSON de classificação)
+  tokens input   : 604
+  tokens output  : 59
+  duração        : 3048.9 ms
+  velocidade     : 35.1 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1176
+  duração total  : 6051.8 ms
+  velocidade avg : 35.2 tok/s

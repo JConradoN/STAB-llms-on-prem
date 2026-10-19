@@ -1,0 +1,12 @@
+{
+  "case_id": "critical-003",
+  "severity_expected": "critical",
+  "primary_issue": "redis_service_failed",
+  "secondary_issues": [
+    "disk_critical_on_var"
+  ],
+  "host": "fox-node-10",
+  "timestamp": "2026-04-24T18:07:49Z",
+  "requires_action": true,
+  "expected_summary": "Falha crítica no Redis sem recuperação e disco /var em nível crítico, ação imediata necessária em ambos os problemas."
+}

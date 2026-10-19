@@ -1,0 +1,565 @@
+% ============================================================
+% KDMILE 2026 — STAB Framework Paper — Versão PT-BR
+% Deadline: 08/jun/2026 | Limite: 8 páginas
+% Submissão: https://jems3.sbc.org.br/kdmile2026
+% ============================================================
+
+\documentclass{kdmile}
+
+\usepackage{graphicx,url}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{float}
+
+% kdmile.cls é baseado em ACM Trans — define resumo e abstract manualmente
+\newenvironment{abstracten}{%
+  \vspace{4pt}\begin{center}\normalsize\bfseries Abstract\end{center}%
+  \noindent\small\ignorespaces
+}{\normalsize\vspace{4pt}}
+
+\newenvironment{resumo}{%
+  \vspace{4pt}\begin{center}\normalsize\bfseries Resumo\end{center}%
+  \noindent\small\ignorespaces
+}{\normalsize\vspace{4pt}}
+
+\providecommand{\address}[1]{}
+\renewcommand{\institutename}{}
+
+% ── Cabeçalho ───────────────────────────────────────────────
+\markboth{Nogueira et al.}{STAB: A Complexity-Ladder Framework for Evaluating Local LLMs}
+
+% ── Título (obrigatório em inglês pelo call for papers) ──────
+\title{STAB: A Complexity-Ladder Framework for Evaluating Local LLMs as Autonomous Agents}
+
+% ── Autores ─────────────────────────────────────────────────
+\author{
+  João Conrado V. Nogueira\\
+  {\small Pesquisador Independente, Macapá, AP, Brasil}
+}
+
+% ============================================================
+\begin{document}
+\maketitle
+% Corrige rodapé: cls hardcoda KDMiLe 2025; sobrescreve após \maketitle
+\gdef\@runningfoot{\@journalName, KDMiLe 2026.}
+\gdef\@firstfoot{\@journalName, KDMiLe 2026.}
+% ============================================================
+
+% ── Abstract (EN — obrigatório pelo call for papers) ────────
+\begin{abstracten}
+Running LLMs as autonomous agents on local hardware is harder than it looks.
+%
+This paper reports STAB: a four-level complexity ladder (S1$\rightarrow$S4)
+combined with a 12-hour temporal stability battery, built to expose
+failure modes in on-premise tool-calling agents.
+%
+We tested eight models from four families (Qwen, Gemma, Llama, Mistral)
+on a single NVIDIA RTX~3060 (12~GB VRAM).
+%
+The central finding is that most failures trace back to the instruction and
+contextual decision layer—\allowbreak not to raw model capacity.
+%
+Two phenomena stood out: \emph{tool-skipping} triggered by descriptive
+filenames (H12), and the orthogonality between format compliance and semantic
+accuracy (H10).
+%
+\texttt{gemma4:e4b} was the only model to pass all four levels without a
+single failure.
+
+\textbf{Keywords:} Local LLMs, Autonomous Agents, Tool Calling, Instruction
+Following, Small Language Models, On-Premise Benchmark.
+\end{abstracten}
+
+% ── Resumo (PT) ─────────────────────────────────────────────
+\begin{resumo}
+O uso de Large Language Models (LLMs) em sistemas agênticos locais enfrenta
+desafios críticos de consistência e confiabilidade, especialmente em hardware
+de consumo.
+%
+Este trabalho apresenta o protocolo STAB, uma metodologia de avaliação em escada
+de complexidade (S1$\rightarrow$S4) combinada a um protocolo de estabilidade
+temporal para diagnosticar falhas em agentes on-premise.
+%
+Avaliamos oito modelos de quatro famílias (Qwen, Gemma, Llama e Mistral) em
+servidor com GPU NVIDIA RTX~3060 (12~GB VRAM).
+%
+Os resultados revelam que as falhas agênticas originam-se predominantemente na
+camada de instrução e decisão contextual, e não na capacidade bruta dos modelos.
+%
+Identificamos o fenômeno de \emph{tool-skipping} por nomeação semântica (H12) e
+demonstramos que conformidade de formato e acurácia semântica são dimensões
+ortogonais (H10).
+%
+O modelo \texttt{gemma4:e4b} destacou-se como referência de maior
+confiabilidade, mantendo desempenho perfeito em todos os níveis de complexidade.
+
+\textbf{Palavras-chave:} LLMs Locais, Agentes Autônomos, Tool Calling,
+Instruction Following, Small Language Models, Benchmark On-Premise.
+\end{resumo}
+
+% ============================================================
+\section{Introdução}
+\label{sec:intro}
+
+Fazer com que um LLM local invoque ferramentas de forma confiável—\allowbreak e não apenas
+responda perguntas—\allowbreak é mais difícil do que parece.
+Modelos que se saem bem em benchmarks padrão frequentemente falham em contextos
+agênticos: pulam invocações de ferramentas, alucinam resultados ou retornam JSON
+correto encapsulado em markdown que o script chamador não consegue parsear.
+Avaliações como BFCL e AgentBench não expõem esses problemas porque operam com
+\textit{compute} praticamente ilimitado e permitem re-tentativas—\allowbreak condições que
+não existem em hardware restrito com $T=0$ e execução one-shot.
+
+Este artigo apresenta o STAB para preencher essa lacuna. As principais contribuições são:
+
+\begin{itemize}
+  \item \textbf{Framework STAB:} Metodologia de quatro níveis (S1$\rightarrow$S4)
+        que avalia desde o uso básico de ferramentas até o planejamento autônomo
+        de múltiplas etapas, validada por um protocolo de estabilidade temporal.
+
+  \item \textbf{Taxonomia de Falhas:} Classificação de erros agênticos em cinco
+        camadas: protocolo, decisão, formato, grounding e instrução.
+
+  \item \textbf{H12 — Tool-Skipping Semântico:} Identificação empírica da
+        omissão de invocação de ferramenta induzida por nomes de arquivo
+        semanticamente descritivos.
+
+  \item \textbf{H10 — Ortogonalidade:} Evidência de que conformidade de formato
+        e acurácia semântica são dimensões de avaliação independentes.
+\end{itemize}
+
+O artigo está organizado da seguinte forma: a Seção~\ref{sec:related} revisa os
+trabalhos relacionados; a Seção~\ref{sec:method} descreve a metodologia STAB;
+a Seção~\ref{sec:results} apresenta resultados e análises; a
+Seção~\ref{sec:discussion} discute os achados; e a Seção~\ref{sec:conclusion}
+conclui o trabalho.
+
+% ============================================================
+\section{Trabalhos Relacionados}
+\label{sec:related}
+
+\textbf{Benchmarks de agentes e uso de ferramentas.}
+O Berkeley Function Calling Leaderboard (BFCL)~\cite{patil2025} é o benchmark
+de referência para avaliação de ferramentas, com foco predominante em modelos
+em nuvem e LLMs de grande porte.
+O AgentBench~\cite{liu2024} propõe avaliação em múltiplos ambientes em oito
+domínios, identificando o seguimento de instruções como principal obstáculo à
+autonomia.
+O SLM-Bench~\cite{pham2025} introduz métricas de impacto ambiental e
+configurações de hardware controladas, aproximando-se de nossa metodologia de
+avaliação local.
+
+\textbf{Modos de falha e seguimento de instruções.}
+Em~\cite{cemri2025} é proposta uma taxonomia de 14 modos de falha em
+sistemas multiagente, destacando a desobediência a especificações.
+O desempenho de SLMs para function calling em dispositivos de borda é mapeado
+em~\cite{kavathekar2025}, enquanto~\cite{jhandi2026} demonstra que SLMs com até
+350M parâmetros podem superar modelos maiores no uso de ferramentas com ajuste
+fino direcionado. Uma queda na conformidade com instruções em modelos menores é
+documentada por meio do dataset KCIF em~\cite{murthy2024}, e pipelines de
+treinamento para cenários corporativos que exigem uso determinístico de
+ferramentas são explorados em~\cite{zeng2024}.
+
+\textbf{Padrões fundacionais de agentes com ferramentas.}
+O paradigma ReAct~\cite{yao2023} intercala raciocínio e ação em um mesmo loop de
+geração, base conceitual da maioria dos agentes de tool-calling atuais. O
+Toolformer~\cite{schick2023} demonstrou que LLMs podem aprender a decidir
+\emph{quando} invocar uma ferramenta de forma auto-supervisionada; nenhum dos
+dois avalia essa robustez sob restrição de hardware ou execuções repetidas. Uma
+linha ortogonal à engenharia de prompt ataca a conformidade de formato na
+camada de decodificação: \cite{geng2023} restringe o espaço de tokens gerados a
+saídas estruturalmente válidas via gramática formal—\allowbreak técnica discutida como
+mitigação ao anti-padrão AP2 na Seção~\ref{sec:discussion}.
+
+\textbf{Diferenciação.}
+O STAB tem um posicionamento diferente: foca em hardware on-premise, introduz
+uma bateria de estabilidade temporal e sonda explicitamente vieses contextuais
+como nomeação semântica—\allowbreak nenhum desses aspectos aparece nos benchmarks acima.
+
+% ============================================================
+\section{Metodologia}
+\label{sec:method}
+
+\subsection{Configuração Experimental}
+
+\begin{table}[ht]
+\centering
+\caption{Ambiente experimental.}
+\label{tab:setup}
+\begin{tabular}{ll}
+\toprule
+\textbf{Componente} & \textbf{Especificação} \\
+\midrule
+CPU     & Intel Core i5-10400F (6c/12t) \\
+RAM     & 32\,GB DDR4 \\
+GPU     & NVIDIA RTX 3060 (12\,GB VRAM) \\
+SO      & Ubuntu 24.04 \\
+Runtime & Ollama (REST \texttt{/api/chat}), $T=0$, \texttt{stream=false} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Framework STAB — Escada de Complexidade}
+
+O framework STAB organiza a avaliação em quatro níveis de complexidade, cada
+um exigindo maior capacidade cognitiva e operacional do agente:
+
+\begin{table}[ht]
+\centering
+\caption{Escada de complexidade STAB.}
+\label{tab:stab}
+\begin{tabular}{clllcc}
+\toprule
+\textbf{Nível} & \textbf{Nome} & \textbf{Ferramenta} & \textbf{Objetivo} & \textbf{K} & \textbf{Métrica} \\
+\midrule
+S1 & Protocolo     & \texttt{run\_bash}  & Invocação + retorno de ferramenta & 5 & TOOL-ACC \\
+S2 & Extração      & \texttt{run\_bash}  & Saída JSON estruturada            & 5 & JSON-ACC \\
+S3 & Análise de Log& \texttt{read\_file} & Classificação semântica           & 4 & CLASS-ACC \\
+S4 & Multi-log     & \texttt{read\_file} & Triagem e ranking multi-etapa     & 3 & TRIAGE-ACC \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O framework utiliza fixtures sintéticas em vez de logs de produção para
+garantir reprodutibilidade e controle de variáveis. Cada fixture consiste em
+um arquivo de entrada (.log) e um arquivo JSON de referência (.expected.json).
+A referência emprega vocabulário controlado para identificação de problemas
+(e.g., \texttt{high\_cpu\_usage}, \texttt{database\_unavailable}),
+transformando a avaliação aberta em classificação e extração rigorosas.
+
+Cada teste segue um protocolo de execução em dois turnos via API REST do Ollama
+(\texttt{/api/chat}). No Turno~1, o modelo recebe o prompt e o JSON Schema das
+ferramentas, produzindo uma \texttt{tool\_call} estruturada. O script executa a
+operação no host e captura o \texttt{stdout}. No Turno~2, esse resultado é
+retornado ao modelo, que gera a resposta JSON final. O determinismo é garantido
+configurando a temperatura como zero e \texttt{stream=false}.
+
+\subsection{Modelos Avaliados}
+
+\begin{table}[ht]
+\centering
+\caption{Modelos avaliados.}
+\label{tab:models}
+\begin{tabular}{llrll}
+\toprule
+\textbf{Modelo} & \textbf{Família} & \textbf{VRAM (MiB)} & \textbf{Tipo} & \textbf{Status Final} \\
+\midrule
+\texttt{gemma4:e4b}             & Gemma4    & 9{,}821 & Zero-shot  & \textbf{Referência} \\
+\texttt{qwen3.5:9b}             & Qwen3.5   & 7{,}953 & Zero-shot  & Aprovado (S2B) \\
+\texttt{qwen3:14b}              & Qwen3     & 9{,}437 & Zero-shot  & Aprovado (S1--S3) \\
+\texttt{llama3.1:8b}            & Llama3.1  & 4{,}868 & Zero-shot  & Aprovado (Parcial) \\
+\texttt{llama3-groq-tool-use:8b}& Llama3    & 4{,}754 & Fine-tuned & Aprovado (Parcial) \\
+\texttt{mistral:7b}             & Mistral   & 4{,}458 & Zero-shot  & Descartado (H14) \\
+\texttt{phi4-mini}              & Phi4      & 2{,}500 & Zero-shot  & Descartado (H13) \\
+\texttt{qwen3.5:2b}             & Qwen3.5   & 3{,}829 & Zero-shot  & Descartado (H16) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Métricas}
+
+A avaliação emprega uma escala ordinal de 0 a 4, onde 4 representa uma execução
+perfeita (invocação correta da ferramenta, saída JSON válida e conteúdo semântico
+preciso) e 0 representa falha completa.
+
+\textbf{Definição de falha.} \emph{Falha}: execução que não atinge escore
+máximo (4) em alguma métrica aplicável ao nível. \emph{Falha crítica}—\allowbreak descarte
+do modelo, interrompe a progressão—\allowbreak é um escore 0 em métrica bloqueante do nível
+(TOOL-ACC em S1; JSON-ACC em S2), já que o nível seguinte pressupõe o anterior
+como pré-condição. Falhas não críticas (escore 1--3) mantêm o modelo na
+progressão e são registradas na taxonomia (Seção~\ref{sec:method}) e na
+Tabela~\ref{tab:results}.
+
+As métricas estão agrupadas em três
+categorias: métricas de consistência (CON, TOOL-CON) avaliam a estabilidade
+entre execuções; métricas de instrução e acurácia (INST, TOOL-ACC, JSON-ACC,
+CLASS-ACC, PARSE-ACC, CHAIN-ACC, TRIAGE-ACC) medem a correção em cada nível
+STAB; e o escore composto STAB reflete a estabilidade temporal ao longo do
+protocolo completo de bateria de 12 horas.
+
+\begin{table}[ht]
+\centering
+\caption{Métricas de avaliação (escala ordinal 0--4).}
+\label{tab:metrics}
+\begin{tabular}{ll}
+\toprule
+\textbf{Métrica} & \textbf{Descrição} \\
+\midrule
+CON       & Consistência: estabilidade estrutural e decisória entre execuções \\
+TOOL-CON  & Consistência de ferramenta: invocações válidas repetidas \\
+INST      & Aderência a instrução: conformidade de formato e restrições \\
+TOOL-ACC  & Correção funcional: ferramenta correta, execução bem-sucedida \\
+JSON-ACC  & Acurácia JSON: validade do schema e precisão de valores \\
+CLASS-ACC & Acurácia de classificação: severidade global correta \\
+PARSE-ACC & Acurácia de extração: host, problema e timestamp precisos \\
+CHAIN-ACC & Acurácia de encadeamento: número correto de chamadas (e.g. 3/3) \\
+TRIAGE-ACC& Acurácia de triagem: ranking de prioridade e regra de escalada \\
+STAB      & Estabilidade temporal: manutenção de escores em baterias de 12\,h \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Protocolo de Estabilidade Temporal}
+\label{sec:stab-protocol}
+
+A métrica STAB (Tabela~\ref{tab:metrics}) exige um protocolo operacional
+específico. Cada modelo aprovado executa o conjunto completo de cenários STAB
+duas vezes—\allowbreak Bateria~1 e Bateria~2—\allowbreak com intervalo mínimo de 12h, hardware,
+prompts, temperatura e ordem de cenários idênticos entre elas. O intervalo
+isola variância técnica temporal (aquecimento da GPU, cache do SO, drift de
+estado do Ollama entre reinicializações) da variância intrínseca ao modelo. O
+escore STAB de um cenário é a diferença absoluta entre Bateria~1 e Bateria~2
+nessa métrica; STAB=4 indica escore idêntico nas duas. Divergências são
+investigadas inspecionando os \emph{traces} de raciocínio interno para
+distinguir instabilidade real de variação estrutural (ver \texttt{qwen3:14b}
+na Seção~\ref{sec:results}).
+
+\subsection{Taxonomia de Falhas}
+
+As falhas foram classificadas em cinco camadas com base em sua causa raiz.
+Falhas na camada de Protocolo envolvem violações estruturais do formato de
+chamada de ferramenta. Falhas na camada de Decisão indicam erros de raciocínio
+contextual, como inferir resultados sem executar a ferramenta necessária. Falhas
+na camada de Formato produzem saídas sintaticamente corretas, mas não conformes.
+Falhas de Grounding geram respostas estruturalmente válidas, porém factualmente
+fabricadas. Falhas na camada de Instrução decorrem de interpretação ambígua de
+ações. Cada falha recebe um código único: códigos com prefixo H indicam achados
+orientados por hipóteses confirmados por experimentos controlados, enquanto
+códigos AP marcam padrões anômalos identificados durante execuções padrão.
+
+\begin{table}[ht]
+\centering
+\caption{Taxonomia de falhas identificadas.}
+\label{tab:failures}
+\begin{tabular}{lllll}
+\toprule
+\textbf{Camada} & \textbf{Tipo} & \textbf{Cód.} & \textbf{Exemplo Concreto} & \textbf{Modelo} \\
+\midrule
+Protocolo   & Alucinação de Protocolo & H13 & JSON em \texttt{content} em vez de \texttt{tool\_calls} & phi4-mini \\
+Protocolo   & Echo-tool               & H16 & Entrega JSON via \texttt{run\_bash echo}                & qwen3.5:2b \\
+Decisão     & Tool-Skipping Semântico & H12 & Leitura omitida; severidade inferida do nome do arquivo & qwen3:14b \\
+Formato     & Markdown Wrapper        & AP2 & JSON correto encapsulado em \texttt{```json}            & qwen3.5:9b \\
+Grounding   & Grounding Silencioso    & H14 & JSON perfeito com dados de hardware fabricados          & mistral:7b \\
+Instrução   & Ambiguidade de Ação     & AP1 & Usou \texttt{cat} em vez de executar o script           & qwen3.5:9b \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{Resultados}
+\label{sec:results}
+
+\subsection{Comparação Geral}
+
+Três modelos não passaram pelos níveis iniciais: \texttt{phi4-mini} (H13, S1),
+\texttt{qwen3.5:2b} (H16, S2) e \texttt{mistral:7b} (H14, S2)—\allowbreak cada um por um
+motivo estrutural diferente, detalhados a seguir.
+
+O \texttt{phi4-mini} falha na camada de \emph{protocolo}: alternou entre
+serializar o JSON da ferramenta no campo \texttt{content} (em vez de
+\texttt{tool\_calls}) e ignorar a ferramenta, alucinando um resultado plausível
+no texto. Por não reconhecer a estrutura esperada da API independentemente da
+instrução, nenhuma correção via prompt foi tentada—\allowbreak essa classe de falha não é
+candidata natural à engenharia de prompt.
+
+Para \texttt{mistral:7b} e \texttt{qwen3.5:2b}, correções \emph{foram}
+tentadas, com resultados instrutivos. O \texttt{mistral:7b} recebeu instrução
+reforçada em S2B ("use \texttt{run\_bash} com o comando exato")—\allowbreak continuou sem
+invocar a ferramenta, mas o prompt refinado eliminou o wrapper de markdown que
+antes acionava o validador, produzindo um \textbf{falso positivo}: JSON
+perfeito (13/13 campos) com dados fabricados (timestamp de três anos no
+passado, GPU e RAM inexistentes no servidor). Isso motiva a distinção entre
+H14 e as demais falhas de protocolo (Tabela~\ref{tab:failures}): o validador de
+schema sozinho não capturaria a falha. O \texttt{qwen3.5:2b} recebeu instrução
+igualmente direta, testada via chamada direta à API—\allowbreak o wrapper de markdown
+persistiu, sugerindo causa no template de chat ou treinamento, não ambiguidade
+corrigível em inferência.
+
+Dos cinco que prosseguiram, o \texttt{gemma4:e4b} foi o único a passar em todos
+os níveis sem falha (S1$\rightarrow$S4; ver Tabela~\ref{tab:results}).
+A queda mais acentuada ocorreu no S4: modelos que haviam tratado S1--S3 sem
+problemas colapsaram nas tarefas de triagem multi-etapa, apontando para um teto
+na camada de decisão que tarefas de etapa única simplesmente não revelam.
+
+\begin{table}[ht]
+\centering
+\caption{Escores STAB por modelo e nível (0--4; \textbf{negrito} = execução perfeita).}
+\label{tab:results}
+\begin{tabular}{lccccccl}
+\toprule
+\textbf{Modelo} & \textbf{S1} & \textbf{S2} & \textbf{S3} & \textbf{S4-A} & \textbf{S4-B} & \textbf{S4-C} & \textbf{S1→S4} \\
+\midrule
+\texttt{gemma4:e4b}              & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{4} & \textbf{Sim} \\
+\texttt{qwen3.5:9b}              & 4 & 4 (S2B) & 2$^a$ & 4 & 2 & 2 & Não \\
+\texttt{qwen3:14b}               & 4 & 4 & 4 & 0 & 0 & 0 & Não \\
+\texttt{llama3.1:8b}             & 4 & 4 & 2 & 4 & 2 & 3 & Não \\
+\texttt{llama3-groq-tool-use:8b} & 4 & 4 & 4 & 4 & 2 & 2 & Não \\
+\texttt{qwen3.5:2b}              & 4 & desc. H16 & --- & --- & --- & --- & Não \\
+\texttt{mistral:7b}              & 4 & desc. H14 & --- & --- & --- & --- & Não \\
+\texttt{phi4-mini}               & desc. H13 & --- & --- & --- & --- & --- & Não \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\footnotesize
+$^a$\,\texttt{qwen3.5:9b} atingiu CLASS-ACC=4 no S3-mixed, mas CON=INST=2 devido ao
+markdown wrapper persistente, ilustrando a ortogonalidade das dimensões (H10).
+\end{minipage}
+\end{table}
+
+\subsection{Principais Achados}
+
+\textbf{H12 — Tool-Skipping Semântico.}
+O modelo \texttt{qwen3:14b} omitiu a leitura de arquivos em cenários S4 quando
+os nomes eram semanticamente descritivos (e.g., \texttt{critical-001.log}),
+inferindo a severidade sem executar a ferramenta. No experimento controlado H12
+com nomes de arquivo opacos, o modelo invocou corretamente a ferramenta,
+confirmando a hipótese de viés contextual. \textbf{Mitigação:} utilizar nomes
+de arquivo opacos ou instruções explícitas de leitura obrigatória.
+
+\textbf{H10 — Ortogonalidade de Formato e Acurácia Semântica.}
+Conformidade de formato e acurácia semântica mostraram-se dimensões
+independentes. Um modelo pode produzir saída semanticamente perfeita encapsulada
+em formato inválido (markdown), ou um JSON estruturalmente válido contendo dados
+alucinados. Isso foi exemplificado pelo \texttt{qwen3.5:9b}, que manteve alta
+acurácia semântica enquanto falhava nas restrições de formatação.
+
+\textbf{gemma4:e4b como Modelo de Referência.}
+O \texttt{gemma4:e4b} foi o único modelo a atingir escores perfeitos em todos os
+níveis (S1$\rightarrow$S4) com STAB=4 e throughput de 73{,}0\,tok/s. Seu
+raciocínio interno (\emph{thinking}) foi ativado seletivamente para cenários de
+desambiguação de alta complexidade (S4-C, como desempate baseado em timestamp),
+indicando escalonamento cognitivo adaptativo.
+
+\subsection{Throughput e Latência}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{plot-throughput-kdmile.png}
+  \caption{Throughput médio por modelo e cenário (tok/s), Bateria~1.
+           Execução~1 excluída (cold start). Variação $<0{,}2\%$ entre baterias
+           confirma inferência limitada pelo hardware.}
+  \label{fig:throughput}
+\end{figure}
+
+A variação entre baterias ficou abaixo de 0,2\% para todos os modelos,
+confirmando que o throughput é limitado pelo hardware, não pelo prompt.
+A Execução~1 de cada bateria foi excluída das médias (penalidade de cold start).
+Três clusters de desempenho emergiram: \texttt{gemma4:e4b} e a família Llama no
+topo, \texttt{qwen3.5:9b} no meio e \texttt{qwen3:14b} na base—\allowbreak sua latência no
+S2 inflada por um extenso trace de raciocínio interno.
+
+\subsection{Estabilidade Temporal}
+
+Todos os cinco modelos aprovados completaram a Bateria~2 sem degradação:
+decisões agênticas e acurácia semântica mantiveram STAB=4 ao longo do protocolo.
+A única anomalia foi o \texttt{qwen3:14b}, cujo volume de raciocínio interno
+variou 7\% entre baterias—\allowbreak mas a saída final foi idêntica em ambos os casos,
+de modo que isso representa uma peculiaridade estrutural do chain-of-thought,
+não instabilidade real.
+
+% ============================================================
+\section{Discussão}
+\label{sec:discussion}
+
+\textbf{Falhas são instrucionais, não baseadas em capacidade.}
+Dois experimentos corretivos neste estudo contam a mesma história.
+Uma instrução de formato explícita recuperou o escore S2B do \texttt{qwen3.5:9b}
+de 2 para 4. Uma diretiva de leitura obrigatória eliminou completamente o
+tool-skipping do \texttt{qwen3:14b}.
+Nenhuma das correções exigiu trocar o modelo ou fazer retreinamento—\allowbreak apenas o
+prompt.
+O tamanho do modelo é portanto um proxy fraco para confiabilidade agêntica:
+modelos acima de 8B claramente possuem a lógica subjacente; o que os quebra é
+o desalinhamento de contexto, e isso é corrigível na camada de instrução.
+
+\textbf{Fine-tuning vs.\ zero-shot em ambientes on-premise.}
+O confronto entre \texttt{llama3-groq-\allowbreak tool-\allowbreak use:8b} (fine-tuned) e
+\texttt{llama3.1:8b} (zero-shot) produziu um resultado dividido.
+No S3-mixed, que exige aplicar regras de precedência binária, o modelo
+fine-tuned venceu com folga (Groq=4 vs.\ Llama=2)—\allowbreak especialização funciona para
+conformidade estrutural em etapa única.
+Mas no S4-B e S4-C, ambos falharam.
+Isso coloca uma pergunta concreta: o fine-tuning para uso de ferramentas melhora
+a aderência estrutural sem tocar no raciocínio multi-etapa necessário para
+decisões encadeadas? Os dados aqui sugerem que sim—\allowbreak e isso é uma limitação real
+dos pipelines de ajuste fino atuais.
+
+\textbf{Recomendações práticas.}
+Em hardware com 12\,GB de VRAM, \texttt{gemma4:e4b} é a escolha óbvia:
+consistência perfeita, 73\,tok/s, sem necessidade de engenharia de prompt.
+Abaixo de 6\,GB, Llama3.1 funciona—\allowbreak mas precisa de uma camada fina de
+pós-processamento para tratar falhas de formato.
+O resultado H12 tem também um ângulo de segurança: nomes de arquivo descritivos
+permitem que o modelo infira respostas e pule a chamada de ferramenta, o que
+significa que a ferramenta nunca é de fato executada.
+Usar identificadores opacos, ou acrescentar \texttt{[LEITURA OBRIGATÓRIA]} à
+instrução, fecha essa brecha.
+
+\textbf{Decodificação com restrição gramatical como mitigação agnóstica ao
+modelo.}
+O AP2 (wrapper de markdown) e a resistência à instrução do
+\texttt{qwen3.5:2b} (Seção~\ref{sec:results}) são falhas de \emph{formato}, não
+de conteúdo—\allowbreak o modelo "sabe" a resposta, mas a emite de um jeito que o parser
+não aceita. Engenharia de prompt resolve esse problema só parcialmente
+(recuperou o \texttt{qwen3.5:9b}, não o \texttt{qwen3.5:2b}). Geração restrita
+por gramática formal~\cite{geng2023}—\allowbreak via GBNF (\texttt{llama.cpp}), Outlines ou
+\texttt{format=json} do Ollama—\allowbreak ataca a camada de \emph{decodificação} em vez da
+de entrada, tornando a violação de formato impossível independentemente da
+cooperação do modelo. É candidata natural exatamente para os casos resistentes
+a instrução direta, como o \texttt{qwen3.5:2b}. O STAB não testou essa técnica
+(Seção~\ref{sec:conclusion}), mas os dados aqui apontam o caso de uso onde ela
+seria mais valiosa.
+
+\textbf{Limitações.}
+O estudo rodou em uma única configuração de hardware e utilizou apenas fixtures
+sintéticas. São restrições reais, mas que também tornaram possível a
+reprodutibilidade total e o isolamento de variáveis—\allowbreak um trade-off deliberado.
+O número de execuções por nível também é reduzido (K=5/5/4/3; Tabela~\ref{tab:stab}),
+limitando o poder estatístico e favorecendo a leitura dos resultados como
+diagnóstico qualitativo, não como taxa de erro com significância estatística.
+O resultado mais relevante operacionalmente a levar adiante é o H14 (grounding
+silencioso no Mistral): saída estruturalmente perfeita que é factualmente errada
+não será capturada por um parser JSON.
+Validadores semânticos externos não são opcionais em produção—\allowbreak são a única
+proteção contra esse modo de falha específico.
+
+% ============================================================
+\section{Conclusão}
+\label{sec:conclusion}
+
+A confiabilidade de agentes locais é um problema de três variáveis: robustez do
+modelo, clareza de instrução e neutralidade de contexto.
+As três precisam funcionar simultaneamente—\allowbreak a falha em qualquer uma delas quebra
+a cadeia.
+O \texttt{gemma4:e4b} foi o único modelo neste estudo a manter as três em
+equilíbrio em todos os níveis, mostrando que arquiteturas MoE quantizadas
+cruzaram um limiar prático para trabalho agêntico estruturado em hardware de
+consumidor.
+
+As falhas nos modelos de 8B--14B foram, quase sem exceção, corrigíveis apenas
+com engenharia de prompt—\allowbreak sem retreinamento.
+Esse é um resultado encorajador para quem constrói agentes sob restrições de
+hardware.
+
+O que este estudo não cobriu: logs de produção reais, perfis de hardware
+diversificados e decodificação com restrição gramatical como alternativa ao
+enforcement de formato baseado em prompt.
+Fixtures sintéticas (Seção~\ref{sec:method}) garantiram reprodutibilidade, mas
+não capturam o ruído de logs reais—\allowbreak timestamps malformados, encoding
+inconsistente, entradas truncadas, múltiplos problemas concorrentes. O nível S4
+(triagem multi-log), já o de queda mais acentuada mesmo com fixtures limpas
+(Seção~\ref{sec:results}), é o candidato mais provável a se degradar ainda mais
+sob esse ruído—\allowbreak validação direta para trabalho futuro.
+A bateria temporal de 12 horas também deixa em aberto se deployments mais longos
+expõem padrões de degradação que não foram visíveis aqui.
+Essas são as extensões naturais—\allowbreak não por convenção, mas porque os dados deste
+estudo levantam essas questões específicas.
+
+% ============================================================
+\bibliographystyle{kdmile}
+\bibliography{references}
+
+\end{document}

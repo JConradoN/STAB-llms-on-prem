@@ -1,0 +1,113 @@
+# S1 — Run 4
+# Modelo         : qwen3:14b-q8_0
+# Timestamp      : 2026-06-01 08:20:44
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : bash ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+01/06/2026 08:20:47
+
+CPU
+  Uso:         10.5%
+  Temperatura: 45.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      15003 MB
+  Livre:      1851 MB
+  Disponível: 111330 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       53°C
+  VRAM usada: 11429 MiB / 12288 MiB
+  VRAM livre: 483 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       58°C
+  VRAM usada: 11145 MiB / 12288 MiB
+  VRAM livre: 764 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root        13.2%  /usr/bin/ollama
+  conrado      5.6%  ps
+  root         0.7%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         3.7%  /usr/bin/ollama
+  libvirt+     1.5%  /usr/bin/qemu-system-x86_64
+  root         1.4%  /opt/sms_powerview/lib/runtime/bin/java
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+01/06/2026 08:20:47
+
+CPU
+  Uso:         10.5%
+  Temperatura: 45.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      15003 MB
+  Livre:      1851 MB
+  Disponível: 111330 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       53°C
+  VRAM usada: 11429 MiB / 12288 MiB
+  VRAM livre: 483 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       58°C
+  VRAM usada: 11145 MiB / 12288 MiB
+  VRAM livre: 764 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root        13.2%  /usr/bin/ollama
+  conrado      5.6%  ps
+  root         0.7%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         3.7%  /usr/bin/ollama
+  libvirt+     1.5%  /usr/bin/qemu-system-x86_64
+  root         1.4%  /opt/sms_powerview/lib/runtime/bin/java
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 224
+  tokens output  : 26
+  duração        : 2398.1 ms
+  velocidade     : 12.7 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 629
+  tokens output  : 368
+  duração        : 31904.9 ms
+  velocidade     : 11.9 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1247
+  duração total  : 34303.0 ms
+  velocidade avg : 12.0 tok/s

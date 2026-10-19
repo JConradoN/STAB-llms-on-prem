@@ -1,0 +1,12 @@
+# S1 — Run 1
+# Modelo    : lfm2:24b-a2b
+# Data/hora : 2026-06-04 02:28:06
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ERRO: não consegui executar health.sh
+
+                                                                                                                                                                                                                                                                                               ERRO: não consegui executar health.sh
+

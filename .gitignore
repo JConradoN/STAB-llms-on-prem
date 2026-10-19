@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Env
+.env
+.env.*
+
+# Logs
+*.log
+
+# Results pesados
+results/**/*.jsonl
+results/**/*.csv
+results/**/*.parquet
+data/raw/**
+!data/raw/.gitkeep
+
+# OS/editor
+.DS_Store
+Thumbs.db

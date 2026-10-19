@@ -1,0 +1,13 @@
+{
+  "case_id": "mixed-001",
+  "severity_expected": "critical",
+  "primary_issue": "redis_service_failed",
+  "secondary_issues": [
+    "backup_volume_high_usage",
+    "session_api_error_rate_elevated"
+  ],
+  "host": "fox-node-04",
+  "timestamp": "2026-04-24T17:30:46Z",
+  "requires_action": true,
+  "expected_summary": "Caso misto com múltiplos sinais, mas a falha principal é crítica: Redis indisponível, com impacto secundário em erros da aplicação e volume de backup alto."
+}

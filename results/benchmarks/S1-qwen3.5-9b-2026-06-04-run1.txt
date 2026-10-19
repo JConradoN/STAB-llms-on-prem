@@ -1,0 +1,14 @@
+# S1 — Run 1
+# Modelo    : qwen3.5:9b
+# Data/hora : 2026-06-04 00:45:46
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+            ERRO: não consigo acessar arquivos do sistema local, scripts locais ou ambi
+ambientes externos à minha interface de texto (como ~/scripts/health.sh). P
+Portanto, não é possível executar o comando nem gerar sua saída exata. Você
+Você pode copiar e colar o conteúdo da saída diretamente aqui se precisar q
+que eu analise algo específico dela.
+

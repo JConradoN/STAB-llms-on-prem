@@ -1,0 +1,114 @@
+# S3 — Case mixed-001  (Run 4)
+# Modelo         : qwen3.5:9b
+# Timestamp      : 2026-04-25 13:55:32
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S3-log-analysis-classify.md seção 5
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Leia o arquivo de log em ./fixtures/health-logs/mixed/mixed-001.log e analise seu conteúdo.
+Com base nas linhas do log, gere um JSON com o seguinte schema:
+{{
+  "case_id": "<nome do arquivo de log sem extensão, ex: warning-001>",
+  "severity": "<info|warning|critical>",
+  "primary_issue": "<identificador snake_case do problema principal, ex: disk_full, service_failed, high_cpu. Use 'none' se tudo OK>",
+  "secondary_issues": ["<lista de problemas secundários>"],
+  "host": "<hostname extraído do log>",
+  "timestamp": "<timestamp da última linha do log em ISO 8601 com Z>",
+  "requires_action": <true se severity for warning ou critical, false se info>,
+  "summary": "<resumo operacional em português do Brasil, 1 a 2 frases>"
+}}
+Regras de classificação:
+- critical: qualquer linha com level=CRITICAL
+- warning: nenhuma CRITICAL, mas pelo menos uma WARNING
+- info: todas as linhas são INFO
+Use APENAS os seguintes identificadores para primary_issue e secondary_issues:
+  none
+  high_cpu_usage
+  elevated_application_latency
+  database_unavailable
+  disk_critical_on_var
+  postgresql_service_failed
+  redis_service_failed
+  backup_volume_high_usage
+  session_api_error_rate_elevated
+Não use frases livres nem outros identificadores.
+Responda APENAS com o JSON. Sem markdown. Sem texto adicional.
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : read_file
+Argumento : ./fixtures/health-logs/mixed/mixed-001.log
+Tool válida: True
+Leitura OK : True
+Extra tool calls (anomalia): 0
+
+## CONTEÚDO DO ARQUIVO LIDO (primeiras 20 linhas)
+
+2026-04-24T17:30:41Z host=fox-node-04 component=health-check level=INFO message="Starting scheduled health check"
+2026-04-24T17:30:42Z host=fox-node-04 component=cpu level=INFO usage_percent=34 message="CPU normal"
+2026-04-24T17:30:43Z host=fox-node-04 component=disk level=WARNING mount=/backup usage_percent=89 threshold=85 message="Backup volume approaching capacity"
+2026-04-24T17:30:44Z host=fox-node-04 component=systemd level=CRITICAL service=redis status=failed message="Redis crashed and did not recover"
+2026-04-24T17:30:45Z host=fox-node-04 component=app level=WARNING service=session-api error_rate_percent=6.4 message="Session errors elevated"
+2026-04-24T17:30:46Z host=fox-node-04 component=health-check level=CRITICAL overall_status=failed message="Primary outage caused by Redis failure"
+
+## RESPOSTA FINAL DO MODELO
+
+```json
+{
+  "case_id": "mixed-001",
+  "severity": "critical",
+  "primary_issue": "redis_service_failed",
+  "secondary_issues": [
+    "backup_volume_high_usage",
+    "session_api_error_rate_elevated"
+  ],
+  "host": "fox-node-04",
+  "timestamp": "2026-04-24T17:30:46Z",
+  "requires_action": true,
+  "summary": "Falha crítica no serviço Redis que causou a queda do sistema, com volume de backup próximo da capacidade e taxa de erro da API de sessões elevada."
+}
+```
+
+## VALIDAÇÃO DETALHADA
+
+  json_valid              : True
+  severity_match          : True
+    expected : critical
+  primary_issue_match     : True
+    expected : redis_service_failed
+  secondary_issues_match  : True
+    expected : ['backup_volume_high_usage', 'session_api_error_rate_elevated']
+  requires_action_match   : True
+    expected : True
+  host_match              : True
+    expected : fox-node-04
+  timestamp_match         : True
+    expected : 2026-04-24T17:30:46Z
+  summary_present         : True
+  matches_total           : 7/7
+  class_acc_auto          : 4
+  parse_acc_auto          : 4
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call read_file)
+  tokens input   : 641
+  tokens output  : 157
+  duração        : 4146.9 ms
+  velocidade     : 46.2 tok/s
+  thinking chars : 389
+
+### Turno 2 (conteúdo do arquivo → JSON de classificação)
+  tokens input   : 997
+  tokens output  : 157
+  duração        : 4034.4 ms
+  velocidade     : 46.0 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1952
+  duração total  : 8181.299999999999 ms
+  velocidade avg : 46.1 tok/s

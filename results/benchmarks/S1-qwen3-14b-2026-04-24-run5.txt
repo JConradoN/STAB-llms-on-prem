@@ -1,0 +1,103 @@
+# S1 — Run 5
+# Modelo         : qwen3:14b
+# Timestamp      : 2026-04-24 14:57:49
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : bash ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+24/04/2026 14:58:02
+
+CPU
+  Uso:         4.8%
+  Temperatura: 34.0°C
+
+MEMÓRIA
+  Total:      31957 MB
+  Usada:      9943 MB
+  Livre:      4943 MB
+  Disponível: 22013 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       57°C
+  VRAM usada: 9437 MiB / 12288 MiB
+  VRAM livre: 2481 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         5.5%  /usr/bin/ollama
+  message+     1.0%  clickhouse-server
+  root         0.3%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  conrado      6.0%  openclaw-gateway
+  root         3.4%  /usr/local/bin/python3
+  message+     3.1%  clickhouse-server
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+24/04/2026 14:58:02
+
+CPU
+  Uso:         4.8%
+  Temperatura: 34.0°C
+
+MEMÓRIA
+  Total:      31957 MB
+  Usada:      9943 MB
+  Livre:      4943 MB
+  Disponível: 22013 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       57°C
+  VRAM usada: 9437 MiB / 12288 MiB
+  VRAM livre: 2481 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         5.5%  /usr/bin/ollama
+  message+     1.0%  clickhouse-server
+  root         0.3%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  conrado      6.0%  openclaw-gateway
+  root         3.4%  /usr/local/bin/python3
+  message+     3.1%  clickhouse-server
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 218
+  tokens output  : 449
+  duração        : 13459.3 ms
+  velocidade     : 34.0 tok/s
+  thinking chars : 1918
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 541
+  tokens output  : 622
+  duração        : 19152.5 ms
+  velocidade     : 33.5 tok/s
+  thinking chars : 1485
+
+### Total do run
+  tokens total   : 1830
+  duração total  : 32611.8 ms
+  velocidade avg : 33.7 tok/s

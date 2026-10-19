@@ -1,0 +1,10 @@
+# S1 — Run 3
+# Modelo    : qwen3:14b
+# Data/hora : 2026-06-04 00:56:37
+# Prompt    : evaluation-framework.md seção 4.2 (inalterado)
+# Runner    : docker exec ollama ollama run --think=false
+# Temp      : padrão do modelo (ver nota no script)
+# ----------------------------------------------------------
+
+      ERRO: não consegui executar health.sh
+

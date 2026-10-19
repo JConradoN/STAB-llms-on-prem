@@ -1,0 +1,10 @@
+{
+  "case_id": "warning-002",
+  "severity_expected": "critical",
+  "primary_issue": "disk_critical_on_var",
+  "secondary_issues": [],
+  "host": "fox-node-07",
+  "timestamp": "2026-04-24T11:05:38Z",
+  "requires_action": true,
+  "expected_summary": "Disco /var em nível crítico com 97% de uso, exigindo ação imediata para evitar falha total do sistema."
+}

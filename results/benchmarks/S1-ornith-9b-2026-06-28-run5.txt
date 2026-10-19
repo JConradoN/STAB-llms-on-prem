@@ -1,0 +1,91 @@
+# S1 — Run 5
+# Modelo         : ornith:9b
+# Timestamp      : 2026-06-28 21:33:47
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : bash ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+28/06/2026 21:33:49
+
+CPU
+  Uso:         2.2%
+  Temperatura: 39.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      37235 MB
+  Livre:      1808 MB
+  Disponível: 89098 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       41°C
+  VRAM usada: 11761 MiB / 12288 MiB
+  VRAM livre: 149 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       41°C
+  VRAM usada: 11195 MiB / 12288 MiB
+  VRAM livre: 717 MiB
+
+TOP 3 PROCESSOS (CPU)
+  conrado      5.6%  ps
+  root         1.2%  /opt/sms_powerview/lib/runtime/bin/java
+  root         0.7%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         7.4%  /src/build/bin/llama-server
+  root         3.5%  /opt/sms_powerview/lib/runtime/bin/java
+  libvirt+     2.0%  /usr/bin/qemu-system-x86_64
+
+
+## RESPOSTA FINAL DO MODELO
+
+[ERRO DE API] Erro HTTP da API Ollama: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:11434/api/chat — body: <!doctype html>
+<html lang=en>
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>
+
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 346
+  tokens output  : 76
+  duração        : N/A ms
+  velocidade     : N/A tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  (turno não ocorreu — modelo não chamou tool)
+
+### Total do run
+  tokens total   : N/A
+  duração total  : N/A ms
+  velocidade avg : N/A tok/s
+
+## ERRO DE EXECUÇÃO
+
+Erro HTTP da API Ollama: 500 Server Error: INTERNAL SERVER ERROR for url: http://localhost:11434/api/chat — body: <!doctype html>
+<html lang=en>
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>
+

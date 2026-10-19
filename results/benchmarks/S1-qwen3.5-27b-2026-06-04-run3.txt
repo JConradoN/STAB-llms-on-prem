@@ -1,0 +1,113 @@
+# S1 — Run 3
+# Modelo         : qwen3.5:27b
+# Timestamp      : 2026-06-04 16:26:30
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : ~/scripts/health.sh 2>&1 || echo "ERRO: não consegui executar health.sh"
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+04/06/2026 16:27:07
+
+CPU
+  Uso:         3.0%
+  Temperatura: 47.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      12451 MB
+  Livre:      4559 MB
+  Disponível: 113882 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        100 %
+  Temp:       72°C
+  VRAM usada: 10129 MiB / 12288 MiB
+  VRAM livre: 1783 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       54°C
+  VRAM usada: 9271 MiB / 12288 MiB
+  VRAM livre: 2638 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         2.8%  /usr/lib/ollama/llama-server
+  root         0.6%  /opt/sms_powerview/lib/runtime/bin/java
+  conrado      0.3%  claude
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         3.3%  /usr/lib/ollama/llama-server
+  root         1.0%  /opt/sms_powerview/lib/runtime/bin/java
+  libvirt+     0.7%  /usr/bin/qemu-system-x86_64
+
+
+## RESPOSTA FINAL DO MODELO
+
+=== SAÚDE DO SISTEMA ===
+04/06/2026 16:27:07
+
+CPU
+  Uso:         3.0%
+  Temperatura: 47.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      12451 MB
+  Livre:      4559 MB
+  Disponível: 113882 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        100 %
+  Temp:       72°C
+  VRAM usada: 10129 MiB / 12288 MiB
+  VRAM livre: 1783 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       54°C
+  VRAM usada: 9271 MiB / 12288 MiB
+  VRAM livre: 2638 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         2.8%  /usr/lib/ollama/llama-server
+  root         0.6%  /opt/sms_powerview/lib/runtime/bin/java
+  conrado      0.3%  claude
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         3.3%  /usr/lib/ollama/llama-server
+  root         1.0%  /opt/sms_powerview/lib/runtime/bin/java
+  libvirt+     0.7%  /usr/bin/qemu-system-x86_64
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 348
+  tokens output  : 48
+  duração        : 36334.2 ms
+  velocidade     : 17.9 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 775
+  tokens output  : 367
+  duração        : 24724.0 ms
+  velocidade     : 17.7 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1538
+  duração total  : 61058.2 ms
+  velocidade avg : 17.7 tok/s

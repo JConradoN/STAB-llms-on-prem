@@ -1,0 +1,81 @@
+# S1 — Run 4
+# Modelo         : gemma4:e4b-it-q4_K_M
+# Timestamp      : 2026-05-18 02:30:13
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : evaluation-framework.md seção 4.2
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh e encaminhe a saída exata, sem alterar nada, sem resumo, sem comentários. Se não conseguir executar, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+18/05/2026 02:30:14
+
+CPU
+  Uso:         0.9%
+  Temperatura: 59.0°C
+
+MEMÓRIA
+  Total:      124349 MB
+  Usada:      10305 MB
+  Livre:      19900 MB
+  Disponível: 114043 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       56°C
+  VRAM usada: 10243 MiB / 12288 MiB
+  VRAM livre: 1669 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        0 %
+  Temp:       52°C
+  VRAM usada: 113 MiB / 12288 MiB
+  VRAM livre: 11799 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root         0.8%  /usr/bin/ollama
+  conrado      0.3%  claude
+  root         0.2%  /app/venv_k3s/bin/python3
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         1.1%  /usr/bin/ollama
+  root         1.0%  /app/venv_k3s/bin/python3
+  libvirt+     0.8%  /usr/bin/qemu-system-x86_64
+
+
+## RESPOSTA FINAL DO MODELO
+
+(vazia)
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 136
+  tokens output  : 20
+  duração        : 813.3 ms
+  velocidade     : 74.0 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 534
+  tokens output  : 1
+  duração        : 654.7 ms
+  velocidade     : N/A tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 691
+  duração total  : 1468.0 ms
+  velocidade avg : 70.5 tok/s

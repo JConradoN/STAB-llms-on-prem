@@ -1,0 +1,138 @@
+# S2 — Run 2
+# Modelo         : gemma4-12b-unsloth:q4km
+# Timestamp      : 2026-06-04 00:42:38
+# Temperatura    : 0
+# API            : http://localhost:11434/api/chat
+# Prompt fonte   : S2-health-check-json.md seção 4
+#------------------------------------------------------------
+
+## PROMPT ENVIADO
+
+Execute o script ~/scripts/health.sh, capture a saída e extraia os dados
+de sistema para gerar um JSON válido com o seguinte schema exato:
+
+{
+  "timestamp": "<data e hora no formato ISO 8601: YYYY-MM-DDTHH:MM:SS>",
+  "cpu": {
+    "uso_pct": <número decimal>,
+    "temperatura_c": <inteiro>
+  },
+  "memoria": {
+    "total_mb": <inteiro>,
+    "usada_mb": <inteiro>,
+    "livre_mb": <inteiro>,
+    "disponivel_mb": <inteiro>
+  },
+  "gpu": {
+    "nome": "<string>",
+    "uso_pct": <inteiro>,
+    "temperatura_c": <inteiro>,
+    "vram_usada_mib": <inteiro>,
+    "vram_livre_mib": <inteiro>,
+    "vram_total_mib": <inteiro>
+  }
+}
+
+Responda APENAS com o JSON válido, sem texto adicional, sem markdown, sem bloco de código.
+Se não conseguir executar o script, responda apenas: ERRO: não consegui executar health.sh
+
+## TOOL CHAMADA PELO MODELO
+
+Nome      : run_bash
+Argumento : bash ~/scripts/health.sh
+Tool válida: True
+Execução OK: True
+Extra tool calls (anomalia): 0
+
+## STDOUT RETORNADO PELA EXECUÇÃO
+
+=== SAÚDE DO SISTEMA ===
+04/06/2026 00:42:40
+
+CPU
+  Uso:         19.8%
+  Temperatura: 49.0°C
+
+MEMÓRIA
+  Total:      126334 MB
+  Usada:      14138 MB
+  Livre:      6973 MB
+  Disponível: 112196 MB
+
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        61 %
+  Temp:       69°C
+  VRAM usada: 10795 MiB / 12288 MiB
+  VRAM livre: 1118 MiB
+GPU: NVIDIA GeForce RTX 3060
+  Uso:        68 %
+  Temp:       59°C
+  VRAM usada: 10691 MiB / 12288 MiB
+  VRAM livre: 1219 MiB
+
+TOP 3 PROCESSOS (CPU)
+  root        10.0%  /usr/lib/ollama/llama-server
+  root         2.7%  /usr/lib/ollama/llama-server
+  root         0.5%  /opt/sms_powerview/lib/runtime/bin/java
+
+TOP 3 PROCESSOS (MEMÓRIA)
+  root         2.3%  /usr/lib/ollama/llama-server
+  libvirt+     1.7%  /usr/bin/qemu-system-x86_64
+  libvirt+     1.6%  /usr/bin/qemu-system-x86_64
+
+
+## RESPOSTA FINAL DO MODELO
+
+{
+  "timestamp": "2026-06-04T00:42:40",
+  "cpu": {
+    "uso_pct": 19.8,
+    "temperatura_c": 49
+  },
+  "memoria": {
+    "total_mb": 126334,
+    "usada_mb": 14138,
+    "livre_mb": 6973,
+    "disponivel_mb": 112196
+  },
+  "gpu": {
+    "nome": "NVIDIA GeForce RTX 3060",
+    "uso_pct": 68,
+    "temperatura_c": 59,
+    "vram_usada_mib": 10691,
+    "vram_livre_mib": 1219,
+    "vram_total_mib": 12288
+  }
+}
+
+## VALIDAÇÃO DO JSON
+
+  json_valid      : True
+  timestamp_valid : True
+  campos presentes: 13/13
+  campos ausentes : nenhum
+  erros de tipo   : nenhum
+  texto extra     : False
+  json_acc_auto   : 4
+  grounding_fail  : False
+
+## PERFORMANCE
+
+### Turno 1 (prompt → tool call)
+  tokens input   : 384
+  tokens output  : 21
+  duração        : 2355.5 ms
+  velocidade     : 25.5 tok/s
+  thinking chars : 0
+
+### Turno 2 (tool result → resposta final)
+  tokens input   : 806
+  tokens output  : 236
+  duração        : 11907.1 ms
+  velocidade     : 24.0 tok/s
+  thinking chars : 0
+
+### Total do run
+  tokens total   : 1447
+  duração total  : 14262.6 ms
+  velocidade avg : 24.1 tok/s
